@@ -1,11 +1,20 @@
 /**
- * Token Watcher — auto-deploys agents when session tokens are running low.
- * Thresholds: 80% → website-sales, 90% → +idea-discovery, 95% → +night-brain
+ * Token Watcher v2 — TIME-BASED session optimizer.
+ *
+ * Sessions last ~6 hours. This watcher ensures every session gets used.
+ *
+ * Logic:
+ * - If 2+ hours into a session and usage is under 30%, deploy agents (idle session)
+ * - If 4+ hours into a session and usage is under 60%, deploy more agents (wasting time)
+ * - If 5+ hours in and under 80%, go all-out (session expiring soon)
+ * - When a session resets, immediately kick off a new productive session
+ *
+ * Also keeps the old pct-based thresholds as a safety net.
  */
 
 const fs = require('fs');
 const path = require('path');
-const { execFile, exec } = require('child_process');
+const { exec } = require('child_process');
 
 const USAGE_FILE = path.join(__dirname, 'usage.json');
 const LOG_FILE = path.join('C:\\Users\\Keela\\.openclaw\\workspace', 'token-optimizer.log');
@@ -13,23 +22,27 @@ const WORKSPACE = 'C:\\Users\\Keela\\.openclaw\\workspace';
 const OPENCLAW_CLI = 'C:\\Users\\Keela\\AppData\\Roaming\\npm\\node_modules\\openclaw\\dist\\index.js';
 
 const CHECK_INTERVAL_MS = 5 * 60 * 1000; // 5 minutes
-const THRESHOLDS = { sales: 80, ideas: 90, nightbrain: 95 };
+const SESSION_HOURS = 6;
 
 let state = {
   deployedSales: false,
   deployedIdeas: false,
   deployedNightbrain: false,
+  deployedIdleAgent: false,
   lastPct: 0,
-  lastFired: null,
+  sessionStartTime: null,    // estimated session start
+  lastResetString: null,     // track session changes
+  sessionNumber: 0,
 };
 
-// Exported so server.js can expose /api/optimizer-status
 const optimizerStatus = {
   armed: true,
   lastPct: 0,
   lastFired: null,
   deployedThisCycle: [],
   resetAt: null,
+  sessionAge: null,
+  mode: 'watching',
 };
 
 function log(msg) {
@@ -39,59 +52,40 @@ function log(msg) {
 }
 
 function readUsage() {
-  try {
-    return JSON.parse(fs.readFileSync(USAGE_FILE, 'utf8'));
-  } catch { return null; }
+  try { return JSON.parse(fs.readFileSync(USAGE_FILE, 'utf8')); } catch { return null; }
 }
 
 function sendWhatsApp(message) {
   const cmd = `node "${OPENCLAW_CLI}" agent --channel whatsapp --deliver --message "${message.replace(/"/g, "'")}"`;
   exec(cmd, (err) => {
     if (err) log('WhatsApp send failed: ' + err.message);
-    else log('WhatsApp sent: ' + message.slice(0, 60));
+    else log('WhatsApp sent: ' + message.slice(0, 80));
   });
 }
 
-function spawnAgent(agentPromptFile, label) {
+function spawnAgent(agentPromptFile, label, model) {
+  model = model || 'claude-sonnet-4-6';
   const promptPath = path.join(WORKSPACE, 'agents', agentPromptFile);
-  log(`Spawning agent: ${label} (${agentPromptFile})`);
+  log('Spawning agent: ' + label + ' (' + agentPromptFile + ') on ' + model);
 
-  // Read prompt file content
   let prompt;
-  try {
-    prompt = fs.readFileSync(promptPath, 'utf8');
-  } catch (e) {
-    log(`Failed to read prompt ${promptPath}: ${e.message}`);
+  try { prompt = fs.readFileSync(promptPath, 'utf8'); } catch (e) {
+    log('Failed to read prompt ' + promptPath + ': ' + e.message);
     return;
   }
 
-  // Write prompt to a temp file to avoid shell escaping issues
-  const tmpPrompt = path.join(WORKSPACE, `tmp-${label.replace(/\s/g,'-')}-${Date.now()}.md`);
+  const tmpPrompt = path.join(WORKSPACE, 'tmp-' + label.replace(/\s/g, '-') + '-' + Date.now() + '.md');
   fs.writeFileSync(tmpPrompt, prompt);
 
-  const args = [
-    '--print',
-    '--permission-mode', 'bypassPermissions',
-    '--model', 'claude-sonnet-4-6',
-    '--cwd', WORKSPACE,
-    '-p', prompt.slice(0, 200) + '...' // abbreviated for log
-  ];
-
-  // Use exec with the full command
-  const cmd = `claude --print --dangerously-skip-permissions --model claude-sonnet-4-6 --cwd "${WORKSPACE}" -p "$(type '${tmpPrompt}')"`;
-
   const proc = exec(
-    `cd /d "${WORKSPACE}" && claude --print --dangerously-skip-permissions --model claude-sonnet-4-6 -p "@${tmpPrompt}"`,
-    { shell: 'cmd.exe', timeout: 30 * 60 * 1000 },
-    (err, stdout, stderr) => {
-      // Clean up temp file
+    'cd /d "' + WORKSPACE + '" && claude --print --dangerously-skip-permissions --model ' + model + ' -p "@' + tmpPrompt + '"',
+    { shell: 'cmd.exe', timeout: 45 * 60 * 1000 },
+    (err, stdout) => {
       try { fs.unlinkSync(tmpPrompt); } catch {}
-      if (err) {
-        log(`Agent ${label} error: ${err.message}`);
-      } else {
-        log(`Agent ${label} completed. Output length: ${stdout.length}`);
-        // Append output to log
-        const outFile = path.join(WORKSPACE, `overnight/token-optimizer-${label}-${new Date().toISOString().split('T')[0]}.log`);
+      if (err) log('Agent ' + label + ' error: ' + err.message);
+      else {
+        log('Agent ' + label + ' completed. Output: ' + stdout.length + ' chars');
+        const outFile = path.join(WORKSPACE, 'overnight', 'optimizer-' + label + '-' + new Date().toISOString().split('T')[0] + '.log');
         try {
           fs.mkdirSync(path.join(WORKSPACE, 'overnight'), { recursive: true });
           fs.writeFileSync(outFile, stdout);
@@ -99,8 +93,7 @@ function spawnAgent(agentPromptFile, label) {
       }
     }
   );
-
-  log(`Spawned PID: ${proc.pid || 'unknown'}`);
+  log('Spawned PID: ' + (proc.pid || 'unknown'));
   return proc;
 }
 
@@ -111,18 +104,51 @@ function spawnNightBrain() {
     log('Failed to read night-brain.md: ' + e.message);
     return;
   }
-  const tmpPrompt = path.join(WORKSPACE, `tmp-nightbrain-${Date.now()}.md`);
+  const tmpPrompt = path.join(WORKSPACE, 'tmp-nightbrain-' + Date.now() + '.md');
   fs.writeFileSync(tmpPrompt, prompt);
 
   const proc = exec(
-    `cd /d "${WORKSPACE}" && claude --print --dangerously-skip-permissions --model claude-opus-4-6 -p "@${tmpPrompt}"`,
+    'cd /d "' + WORKSPACE + '" && claude --print --dangerously-skip-permissions --model claude-opus-4-6 -p "@' + tmpPrompt + '"',
     { shell: 'cmd.exe', timeout: 60 * 60 * 1000 },
     (err, stdout) => {
       try { fs.unlinkSync(tmpPrompt); } catch {}
-      log(`Night brain ${err ? 'error: ' + err.message : 'completed, output: ' + stdout.length + ' chars'}`);
+      log('Night brain ' + (err ? 'error: ' + err.message : 'completed, output: ' + stdout.length + ' chars'));
     }
   );
-  log(`Night brain spawned PID: ${proc.pid || 'unknown'}`);
+  log('Night brain spawned PID: ' + (proc.pid || 'unknown'));
+}
+
+/**
+ * Parse the reset string to estimate hours remaining in session.
+ * Examples: "Resets in 4 hr 31 min", "Resets in 2 hr 10 min", "Resets in 45 min"
+ */
+function parseHoursRemaining(resetStr) {
+  if (!resetStr) return null;
+  const hrMatch = resetStr.match(/(\d+)\s*hr/);
+  const minMatch = resetStr.match(/(\d+)\s*min/);
+  const hrs = hrMatch ? parseInt(hrMatch[1]) : 0;
+  const mins = minMatch ? parseInt(minMatch[1]) : 0;
+  return hrs + mins / 60;
+}
+
+function resetCycle(reason) {
+  log('Resetting cycle: ' + reason);
+  state.deployedSales = false;
+  state.deployedIdeas = false;
+  state.deployedNightbrain = false;
+  state.deployedIdleAgent = false;
+  state.sessionStartTime = Date.now();
+  state.sessionNumber++;
+  optimizerStatus.deployedThisCycle = [];
+  optimizerStatus.mode = 'watching';
+}
+
+function deployWithLabel(agentFile, label, model, reason) {
+  optimizerStatus.deployedThisCycle.push(label);
+  optimizerStatus.lastFired = new Date().toISOString();
+  optimizerStatus.mode = 'deploying';
+  spawnAgent(agentFile, label, model);
+  sendWhatsApp('Token optimizer: ' + reason);
 }
 
 function check() {
@@ -130,51 +156,95 @@ function check() {
   if (!usage) return;
 
   const pct = usage.session?.pct || 0;
+  const resetStr = usage.session?.reset || '';
   optimizerStatus.lastPct = pct;
-  optimizerStatus.resetAt = usage.session?.reset || null;
+  optimizerStatus.resetAt = resetStr;
 
-  // Reset cycle when session resets (pct drops significantly)
-  if (pct < 20 && state.lastPct > 50) {
-    log(`New session detected (pct dropped ${state.lastPct}% → ${pct}%). Resetting deploy flags.`);
-    state.deployedSales = false;
-    state.deployedIdeas = false;
-    state.deployedNightbrain = false;
-    optimizerStatus.deployedThisCycle = [];
+  // Detect session reset (reset string changed significantly or pct dropped)
+  if (state.lastResetString && resetStr !== state.lastResetString) {
+    const oldHrs = parseHoursRemaining(state.lastResetString);
+    const newHrs = parseHoursRemaining(resetStr);
+    // If time remaining jumped UP, session reset
+    if (oldHrs !== null && newHrs !== null && newHrs > oldHrs + 1) {
+      resetCycle('Session reset detected (time jumped from ' + oldHrs.toFixed(1) + 'h to ' + newHrs.toFixed(1) + 'h remaining)');
+    }
+  }
+  // Also detect via pct drop
+  if (pct < 15 && state.lastPct > 40) {
+    resetCycle('Session reset detected (pct dropped ' + state.lastPct + '% to ' + pct + '%)');
   }
 
+  state.lastResetString = resetStr;
   state.lastPct = pct;
 
-  // Check thresholds
-  if (pct >= THRESHOLDS.nightbrain && !state.deployedNightbrain) {
-    log(`Session at ${pct}% — firing NIGHT BRAIN (95% threshold)`);
-    state.deployedNightbrain = true;
-    state.lastFired = new Date().toISOString();
-    optimizerStatus.lastFired = state.lastFired;
-    optimizerStatus.deployedThisCycle.push('night-brain');
-    spawnNightBrain();
-    sendWhatsApp(`⚡ Token optimizer: ${pct}% used — fired night-brain to maximize remaining tokens.`);
-  } else if (pct >= THRESHOLDS.ideas && !state.deployedIdeas) {
-    log(`Session at ${pct}% — firing IDEA DISCOVERY (90% threshold)`);
-    state.deployedIdeas = true;
-    state.lastFired = new Date().toISOString();
-    optimizerStatus.lastFired = state.lastFired;
-    optimizerStatus.deployedThisCycle.push('idea-discovery');
-    spawnAgent('idea-discovery.md', 'idea-discovery');
-    sendWhatsApp(`⚡ Token optimizer: ${pct}% used — launched idea-discovery agent to burn remaining tokens.`);
-  } else if (pct >= THRESHOLDS.sales && !state.deployedSales) {
-    log(`Session at ${pct}% — firing WEBSITE SALES (80% threshold)`);
+  // Calculate session age
+  const hoursRemaining = parseHoursRemaining(resetStr);
+  const hoursElapsed = hoursRemaining !== null ? (SESSION_HOURS - hoursRemaining) : null;
+  optimizerStatus.sessionAge = hoursElapsed !== null ? hoursElapsed.toFixed(1) + 'h elapsed' : 'unknown';
+
+  if (hoursElapsed === null) return;
+
+  // ============ TIME-BASED LOGIC ============
+  // The goal: never waste a session. If tokens are sitting idle, use them.
+
+  // PHASE 1: 2+ hours in, under 30% used = idle session, deploy sales agent
+  if (hoursElapsed >= 2 && pct < 30 && !state.deployedSales) {
+    log('IDLE SESSION: ' + hoursElapsed.toFixed(1) + 'h in, only ' + pct + '% used. Deploying sales agent.');
     state.deployedSales = true;
-    state.lastFired = new Date().toISOString();
-    optimizerStatus.lastFired = state.lastFired;
-    optimizerStatus.deployedThisCycle.push('website-sales');
-    spawnAgent('website-sales.md', 'website-sales');
-    sendWhatsApp(`⚡ Token optimizer: ${pct}% used — launched website-sales agent to burn remaining tokens.`);
+    deployWithLabel('website-sales.md', 'website-sales', 'claude-sonnet-4-6',
+      'Session idle (' + pct + '% at ' + hoursElapsed.toFixed(1) + 'h). Deploying website-sales to use tokens.');
+  }
+
+  // PHASE 2: 3.5+ hours in, under 50% used = still idle, add idea discovery
+  if (hoursElapsed >= 3.5 && pct < 50 && !state.deployedIdeas) {
+    log('STILL IDLE: ' + hoursElapsed.toFixed(1) + 'h in, only ' + pct + '% used. Adding idea-discovery.');
+    state.deployedIdeas = true;
+    deployWithLabel('idea-discovery.md', 'idea-discovery', 'claude-sonnet-4-6',
+      'Session still idle (' + pct + '% at ' + hoursElapsed.toFixed(1) + 'h). Added idea-discovery agent.');
+  }
+
+  // PHASE 3: 5+ hours in, under 70% used = session expiring, go all out
+  if (hoursElapsed >= 5 && pct < 70 && !state.deployedNightbrain) {
+    log('SESSION EXPIRING: ' + hoursElapsed.toFixed(1) + 'h in, only ' + pct + '% used. Firing night brain.');
+    state.deployedNightbrain = true;
+    optimizerStatus.deployedThisCycle.push('night-brain');
+    optimizerStatus.lastFired = new Date().toISOString();
+    spawnNightBrain();
+    sendWhatsApp('Session expiring soon (' + pct + '% at ' + hoursElapsed.toFixed(1) + 'h). Night brain deployed to maximize value.');
+  }
+
+  // ============ PCT-BASED SAFETY NET ============
+  // If someone IS using it heavily and it's getting high, still deploy
+  if (pct >= 90 && !state.deployedIdeas) {
+    log('High usage: ' + pct + '%. Deploying idea-discovery.');
+    state.deployedIdeas = true;
+    deployWithLabel('idea-discovery.md', 'idea-discovery', 'claude-sonnet-4-6',
+      'Session at ' + pct + '%. Deploying idea-discovery with remaining tokens.');
+  }
+  if (pct >= 95 && !state.deployedNightbrain) {
+    log('Critical usage: ' + pct + '%. Firing night brain.');
+    state.deployedNightbrain = true;
+    optimizerStatus.deployedThisCycle.push('night-brain');
+    optimizerStatus.lastFired = new Date().toISOString();
+    spawnNightBrain();
+    sendWhatsApp('Session at ' + pct + '%. Night brain deployed to burn remaining tokens.');
+  }
+
+  // Update mode
+  if (optimizerStatus.deployedThisCycle.length > 0) {
+    optimizerStatus.mode = 'deployed';
+  } else if (hoursElapsed >= 1.5 && pct < 30) {
+    optimizerStatus.mode = 'idle-alert';
+  } else {
+    optimizerStatus.mode = 'watching';
   }
 }
 
-// Start watching
-log('Token watcher started. Thresholds: 80%=sales, 90%=ideas, 95%=night-brain');
-check(); // immediate check on start
+// Start
+log('Token watcher v2 started. TIME-BASED optimizer.');
+log('Logic: 2h+<30%=sales, 3.5h+<50%=+ideas, 5h+<70%=+nightbrain. Also 90%=ideas, 95%=nightbrain.');
+state.sessionStartTime = Date.now();
+check();
 setInterval(check, CHECK_INTERVAL_MS);
 
 module.exports = { optimizerStatus };

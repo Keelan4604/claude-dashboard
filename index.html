@@ -598,10 +598,18 @@ function parseOldWebsite(n) { if(!n)return''; if(n.includes('Facebook only')||n.
 
 function timeAgo(d) { var ms=Date.now()-new Date(d).getTime(),m=Math.floor(ms/60000),h=Math.floor(m/60),dy=Math.floor(h/24); if(dy>0)return dy+'d ago'; if(h>0)return h+'h ago'; if(m>0)return m+'m ago'; return'just now'; }
 
+// ============ SMART FETCH (API first, static fallback) ============
+async function smartFetch(apiPath, staticPath) {
+  try { var r = await fetch(apiPath); if (r.ok) return await r.json(); } catch {}
+  try { var r2 = await fetch(staticPath); if (r2.ok) return await r2.json(); } catch {}
+  return null;
+}
+
 // ============ USAGE ============
 async function fetchUsage() {
   try {
-    var d = await (await fetch('/api/usage')).json();
+    var d = await smartFetch('/api/usage', '/usage.json');
+    if (!d) return;
     document.getElementById('sessionPct').textContent=d.session.pct+'%';
     document.getElementById('sessionReset').textContent=d.session.reset;
     setBar('sessionBar',d.session.pct);
@@ -642,11 +650,13 @@ function agentLabel(s) {
 }
 async function fetchAgents() {
   try {
-    var d=await(await fetch('/api/agents')).json(),el=document.getElementById('agentList'),html='';
+    var d=await smartFetch('/api/agents',null);
+    if(!d){document.getElementById('agentList').innerHTML='<div style="font-size:12px;color:var(--muted);padding:8px 0;font-style:italic">Connect locally for live agent data</div>';return;}
+    var el=document.getElementById('agentList'),html='';
     for(var s of(d.sessions||[])){if(!s.alive)continue;var l=agentLabel(s);html+='<div class="agent-row"><div class="agent-dot '+(s.kind==='interactive'?'green':'blue')+'"></div><span class="agent-name">'+l.name+'</span><span class="agent-ctx">'+l.ctx+'</span><span class="agent-time">'+fmt(s.uptimeMs)+'</span></div>';}
     for(var r of(d.ocRuns||[])){html+='<div class="agent-row"><div class="agent-dot blue"></div><span class="agent-name">'+r.label+'</span><span class="agent-ctx">'+r.task+'</span><span class="agent-time">'+fmt(r.uptimeMs)+'</span></div>';}
     el.innerHTML=html||'<div style="font-size:12px;color:var(--muted);padding:8px 0;font-style:italic">None running</div>';
-    try{var od=await(await fetch('/api/optimizer')).json(),badge=document.getElementById('optimizerBadge'),fired=od.deployedThisCycle&&od.deployedThisCycle.length>0,pct=od.lastPct||0;
+    try{var od=await smartFetch('/api/optimizer',null); if(!od){document.getElementById('optimizerBadge').textContent='';throw'no data';}var badge=document.getElementById('optimizerBadge'),fired=od.deployedThisCycle&&od.deployedThisCycle.length>0,pct=od.lastPct||0;
       if(fired){badge.textContent='Auto-deployed: '+od.deployedThisCycle.join(', ');badge.style.color='var(--orange)';}
       else if(pct>=80){badge.textContent='Optimizer: armed - '+pct+'%';badge.style.color='var(--gold)';}
       else{badge.textContent='Optimizer: watching ('+pct+'%)';badge.style.color='var(--muted)';}
@@ -728,7 +738,7 @@ function renderProjects() {
 // ============ LEADS ============
 var allLeads = [], currentFilter = 'all';
 async function fetchLeads() {
-  try { allLeads = await(await fetch('/api/leads')).json(); renderLeads(); updateCallStats(); lastFetch.leads=Date.now(); document.getElementById('leadsUpdated').textContent='Updated '+new Date().toLocaleTimeString(); } catch{}
+  try { var ld=await smartFetch('/api/leads','/leads.json'); if(ld){allLeads=ld;renderLeads();updateCallStats();lastFetch.leads=Date.now();document.getElementById('leadsUpdated').textContent='Updated '+new Date().toLocaleTimeString();} } catch{}
 }
 function updateCallStats() {
   var total=allLeads.length, withPhone=allLeads.filter(function(l){return l.phone;}).length, sent=allLeads.filter(function(l){return(l.emailSent||'').toLowerCase().includes('sent');}).length, demos=allLeads.filter(function(l){return l.demoSite;}).length, called=Object.keys(getCalledStatus()).filter(function(k){return getCalledStatus()[k];}).length;
@@ -822,7 +832,9 @@ function getFileInfo(f){
 }
 async function fetchWorkSessions(){
   try{
-    var sessions=await(await fetch('/api/work-sessions')).json(),el=document.getElementById('workList'),html='';
+    var sessions=await smartFetch('/api/work-sessions',null);
+    if(!sessions){document.getElementById('workList').innerHTML='<div style="color:var(--muted);padding:20px;text-align:center">Connect locally for work session data</div>';return;}
+    var el=document.getElementById('workList'),html='';
     for(var i=0;i<sessions.length;i++){var s=sessions[i],info=getFileInfo(s.file);
       html+='<div class="work-item" id="work-'+i+'"><div class="work-header" onclick="document.getElementById(\'work-'+i+'\').classList.toggle(\'expanded\')"><div class="work-icon" style="background:'+info.bg+'">'+info.icon+'</div><div class="work-info"><div class="work-name">'+info.label+'</div><div class="work-desc">'+info.desc+'</div><div class="work-time">Updated '+timeAgo(s.modified)+'</div></div><div class="work-chevron">&#9660;</div></div><div class="work-body"><div class="work-preview">'+(s.preview||'').replace(/</g,'&lt;').replace(/>/g,'&gt;')+'</div></div></div>';
     }
@@ -847,7 +859,7 @@ setInterval(updateAgos, 1000);
 
 // ============ INIT ============
 async function init(){
-  for(var i=0;i<20;i++){try{var r=await fetch('/api/usage');if(r.ok)break;}catch{}await new Promise(function(r){setTimeout(r,500);});}
+  for(var i=0;i<5;i++){try{var r=await fetch('/api/usage');if(r.ok)break;}catch{}await new Promise(function(r){setTimeout(r,300);});}
   renderProjects();fetchUsage();fetchAgents();fetchLeads();fetchWorkSessions();
   setInterval(fetchUsage,15000);setInterval(fetchAgents,5000);setInterval(fetchLeads,60000);setInterval(fetchWorkSessions,120000);
 }

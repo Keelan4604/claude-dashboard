@@ -598,10 +598,17 @@ function parseOldWebsite(n) { if(!n)return''; if(n.includes('Facebook only')||n.
 
 function timeAgo(d) { var ms=Date.now()-new Date(d).getTime(),m=Math.floor(ms/60000),h=Math.floor(m/60),dy=Math.floor(h/24); if(dy>0)return dy+'d ago'; if(h>0)return h+'h ago'; if(m>0)return m+'m ago'; return'just now'; }
 
-// ============ SMART FETCH (API first, static fallback) ============
+// ============ SMART FETCH (local server first, then same-origin API, then static) ============
+var LOCAL_API = 'http://localhost:3847';
+var usageLive = false;
+
 async function smartFetch(apiPath, staticPath) {
-  try { var r = await fetch(apiPath); if (r.ok) return await r.json(); } catch {}
-  try { var r2 = await fetch(staticPath); if (r2.ok) return await r2.json(); } catch {}
+  // Try local server first (works when Tyrone is running on the PC)
+  try { var r0 = await fetch(LOCAL_API + apiPath, {signal:AbortSignal.timeout(2000)}); if (r0.ok) { usageLive = true; return await r0.json(); } } catch {}
+  // Try same-origin API (works when running locally on port 3847)
+  try { var r = await fetch(apiPath); if (r.ok) { usageLive = true; return await r.json(); } } catch {}
+  // Fall back to static JSON
+  try { var r2 = await fetch(staticPath); if (r2.ok) { usageLive = false; return await r2.json(); } } catch {}
   return null;
 }
 
@@ -629,6 +636,7 @@ async function fetchUsage() {
     document.getElementById('balance').textContent='$'+d.spending.balance.toFixed(2)+' bal';
     lastFetch.usage=Date.now();
     var ts='Updated '+new Date().toLocaleTimeString();
+    if (!usageLive) ts += ' (snapshot)';
     document.getElementById('usageUpdated').textContent=ts;
     document.getElementById('usageUpdated2').textContent=ts;
   } catch{}

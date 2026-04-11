@@ -1,6 +1,7 @@
 // HA → iCUE Bridge
-// Polls Home Assistant for scene.off activation and switches Corsair RGB off
-// Uses PowerShell COM automation to click the iCUE system tray profile menu
+// Polls Home Assistant scenes and switches iCUE profile accordingly
+// scene.off → Sons of the Forest (RGB off)
+// scene.bright/dark/chill → Default (Macros) (RGB on)
 
 const https = require('https');
 const { exec } = require('child_process');
@@ -12,10 +13,21 @@ const HA_TOKEN = fs.readFileSync(
   path.join(require('os').homedir(), '.openclaw', 'secrets', 'ha_token.txt'), 'utf8'
 ).trim();
 
+// iCUE profile GUIDs (from tree.cueprofileorder)
+const PROFILES = {
+  off:     { id: '{6c7fd6d9-9554-4a7a-9aea-c0bd64c698ae}', name: 'Sons of the Forest' },
+  default: { id: '{d7e366cb-d656-43c2-b958-4ab66d61dd10}', name: 'Default (Macros)' },
+};
+
+const CONFIG_PATH = path.join(
+  require('os').homedir(), 'AppData', 'Roaming', 'Corsair', 'CUE5', 'config.cuecfg'
+);
+const ICUE_LAUNCHER = 'C:\\Program Files\\Corsair\\Corsair iCUE5 Software\\iCUE Launcher.exe';
+
 const POLL_INTERVAL = 3000;
-let lastOffChanged = null;
-let lastOtherChanged = {};
-let rgbState = 'unknown'; // 'off' or 'on' or 'unknown'
+let lastChanged = {};
+let currentProfile = null;
+let switching = false;
 
 function log(msg) {
   console.log(`[ha-icue ${new Date().toLocaleTimeString()}] ${msg}`);
@@ -31,7 +43,7 @@ function haGet(apiPath) {
       res.on('data', c => data += c);
       res.on('end', () => {
         try { resolve(JSON.parse(data)); }
-        catch { reject(new Error('Bad JSON: ' + data.slice(0, 100))); }
+        catch { reject(new Error('Bad JSON')); }
       });
     });
     req.on('error', reject);
@@ -39,87 +51,63 @@ function haGet(apiPath) {
   });
 }
 
-// Switch iCUE profile by editing config and sending a refresh signal
-// Profile GUIDs from tree.cueprofileorder:
-//   Sons of the Forest: {6c7fd6d9-9554-4a7a-9aea-c0bd64c698ae}  (lights off / minimal)
-//   Default (Macros):   next GUID in tree
-const PROFILES = {
-  off: '{6c7fd6d9-9554-4a7a-9aea-c0bd64c698ae}',    // Sons of the Forest
-};
+function switchProfile(profile) {
+  if (switching) return;
+  if (currentProfile === profile.id) return;
+  switching = true;
 
-const CONFIG_PATH = path.join(
-  require('os').homedir(),
-  'AppData', 'Roaming', 'Corsair', 'CUE5', 'config.cuecfg'
-);
-
-function switchProfile(profileId, profileName) {
-  // Read current config, update defaultProfile, write it back, restart iCUE
   try {
     let config = fs.readFileSync(CONFIG_PATH, 'utf8');
-    const oldDefault = config.match(/<value name="defaultProfile">\{[^}]+\}<\/value>/);
-    if (oldDefault) {
-      config = config.replace(
-        oldDefault[0],
-        `<value name="defaultProfile">${profileId}</value>`
-      );
+    const match = config.match(/<value name="defaultProfile">\{[^}]+\}<\/value>/);
+    if (match) {
+      config = config.replace(match[0], `<value name="defaultProfile">${profile.id}</value>`);
       fs.writeFileSync(CONFIG_PATH, config);
-      log('Updated config.cuecfg defaultProfile to ' + profileName);
+      log('Config updated → ' + profile.name);
 
-      // Restart iCUE to pick up the change
-      const icuePath = 'C:\\Program Files\\Corsair\\Corsair iCUE5 Software\\iCUE Launcher.exe';
-      exec('taskkill /F /IM iCUE.exe', { shell: 'cmd.exe' }, (err) => {
+      // Kill and restart iCUE
+      exec('taskkill /F /IM iCUE.exe', { shell: 'cmd.exe' }, () => {
         setTimeout(() => {
-          exec(`start "" "${icuePath}"`, { shell: 'cmd.exe' }, (err2) => {
-            if (err2) log('Failed to restart iCUE: ' + err2.message);
-            else log('iCUE restarted with profile: ' + profileName);
+          exec(`start "" "${ICUE_LAUNCHER}"`, { shell: 'cmd.exe' }, (err) => {
+            if (err) log('iCUE restart failed: ' + err.message);
+            else log('iCUE restarted with: ' + profile.name);
+            currentProfile = profile.id;
+            switching = false;
           });
-        }, 2000);
+        }, 1500);
       });
+    } else {
+      log('Could not find defaultProfile in config');
+      switching = false;
     }
   } catch (err) {
-    log('Profile switch error: ' + err.message);
+    log('Switch error: ' + err.message);
+    switching = false;
   }
 }
 
-async function pollScenes() {
+async function poll() {
+  if (switching) return;
+
   try {
-    // Check scene.off
-    const offState = await haGet('/api/states/scene.off');
-    const offChanged = offState.last_changed || offState.last_updated;
+    const scenes = ['scene.off', 'scene.bright', 'scene.dark', 'scene.chill'];
+    for (const scene of scenes) {
+      const state = await haGet('/api/states/' + scene);
+      const changed = state.last_changed || state.last_updated;
 
-    // Check other scenes - any means "not off"
-    const otherScenes = ['scene.bright', 'scene.dark', 'scene.chill'];
-    for (const scene of otherScenes) {
-      try {
-        const s = await haGet('/api/states/' + scene);
-        const changed = s.last_changed || s.last_updated;
-        if (lastOtherChanged[scene] === undefined) {
-          lastOtherChanged[scene] = changed;
-        } else if (changed !== lastOtherChanged[scene]) {
-          lastOtherChanged[scene] = changed;
-          if (rgbState === 'off') {
-            log(scene + ' activated -> RGB should come back (iCUE default)');
-            rgbState = 'on';
-            // No action needed - iCUE default profile handles it
-          }
+      if (!lastChanged[scene]) {
+        lastChanged[scene] = changed;
+        continue;
+      }
+
+      if (changed !== lastChanged[scene]) {
+        lastChanged[scene] = changed;
+        if (scene === 'scene.off') {
+          log('scene.off activated');
+          switchProfile(PROFILES.off);
+        } else {
+          log(scene + ' activated');
+          switchProfile(PROFILES.default);
         }
-      } catch {}
-    }
-
-    // First run
-    if (lastOffChanged === null) {
-      lastOffChanged = offChanged;
-      log('Watching scenes (off last_changed: ' + offChanged + ')');
-      return;
-    }
-
-    // scene.off activated
-    if (offChanged !== lastOffChanged) {
-      lastOffChanged = offChanged;
-      if (rgbState !== 'off') {
-        log('scene.off activated! Switching to Sons of the Forest profile');
-        switchProfile(PROFILES.off, 'Sons of the Forest');
-        rgbState = 'off';
       }
     }
   } catch (err) {
@@ -127,9 +115,7 @@ async function pollScenes() {
   }
 }
 
-log('Starting HA → iCUE bridge');
-log('Polling scenes every ' + (POLL_INTERVAL / 1000) + 's');
-log('scene.off → Sons of the Forest profile (RGB off)');
-
-pollScenes();
-setInterval(pollScenes, POLL_INTERVAL);
+log('HA → iCUE bridge started');
+log('Off → ' + PROFILES.off.name + ' | Other → ' + PROFILES.default.name);
+poll();
+setInterval(poll, POLL_INTERVAL);

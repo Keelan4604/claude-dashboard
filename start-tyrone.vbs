@@ -3,3 +3,4 @@ WshShell.Run "cmd /c cd /d C:\Users\Keela\Desktop\claude-dashboard && node serve
 WshShell.Run "cmd /c cd /d C:\Users\Keela\Desktop\claude-dashboard && node token-watcher.js", 0, False
 WshShell.Run "cmd /c cd /d C:\Users\Keela\Desktop\claude-dashboard && node session-loop.js", 0, False
 WshShell.Run "cmd /c cd /d C:\Users\Keela\Desktop\claude-dashboard && node usage-scraper.js", 0, False
+WshShell.Run "cmd /c cd /d C:\Users\Keela\Desktop\claude-dashboard && node ha-icue-bridge.js", 0, False

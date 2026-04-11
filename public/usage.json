@@ -1,0 +1,21 @@
+{
+  "session": {
+    "pct": 25,
+    "reset": "Resets in 4 hr 31 min"
+  },
+  "weeklyAll": {
+    "pct": 37,
+    "reset": "Resets Wed 8:00 PM"
+  },
+  "sonnet": {
+    "pct": 6,
+    "reset": "Resets Wed 8:00 PM"
+  },
+  "spending": {
+    "spent": 30.15,
+    "limit": 30,
+    "balance": 90.62,
+    "pct": 100,
+    "reset": "Resets in 4"
+  }
+}

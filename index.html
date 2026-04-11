@@ -3,6 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <title>Tyrone Command Center</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@3/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=DM+Sans:wght@400;500;600;700&display=swap');
 
@@ -201,7 +203,10 @@
   .anim { animation: fadeUp .45s cubic-bezier(.16,1,.3,1) both; }
 
   /* ============ USAGE TAB ============ */
-  .usage-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 20px; }
+  .usage-row { display: grid; grid-template-columns: 1fr 1fr 1.5fr; gap: 16px; margin-bottom: 20px; }
+  .usage-cards { display: grid; grid-template-columns: 1fr; gap: 16px; }
+  .usage-chart-card { display: flex; flex-direction: column; }
+  @media (max-width: 900px) { .usage-row { grid-template-columns: 1fr 1fr; } .usage-chart-card { grid-column: 1 / -1; } }
   .usage-big {
     font-size: 32px; font-weight: 700;
     font-family: 'Space Grotesk', sans-serif;
@@ -483,35 +488,43 @@
 
 <!-- ============ USAGE ============ -->
 <div class="panel active" id="panel-usage">
-  <div class="usage-grid">
-    <div class="card anim" style="animation-delay:.05s">
-      <div class="card-label">Session</div>
-      <div class="usage-big" id="sessionPct">-</div>
-      <div class="usage-sub" id="sessionReset">-</div>
-      <div class="bar-track"><div class="bar-fill" id="sessionBar" style="width:0%"></div></div>
-      <div style="margin-top:10px;font-size:12px;font-family:'JetBrains Mono',monospace"><span class="timestamp" id="usageUpdated2">-</span><span class="seconds-ago" id="usageAgo2"></span></div>
-    </div>
-    <div class="card anim" style="animation-delay:.1s">
-      <div class="card-label">Weekly (All Models)</div>
-      <div class="usage-big" id="weeklyAllPct">-</div>
-      <div class="usage-sub" id="weeklyAllReset">-</div>
-      <div class="bar-track"><div class="bar-fill" id="weeklyAllBar" style="width:0%"></div></div>
-    </div>
-    <div class="card anim" style="animation-delay:.15s">
-      <div class="card-label">Sonnet</div>
-      <div class="usage-big" id="sonnetPct">-</div>
-      <div class="usage-sub" id="sonnetReset">-</div>
-      <div class="bar-track"><div class="bar-fill" id="sonnetBar" style="width:0%"></div></div>
-    </div>
-    <div class="card anim" style="animation-delay:.2s">
-      <div class="card-label">Extra Spending</div>
-      <div class="usage-big" id="spentLabel">-</div>
-      <div class="usage-sub" id="spentReset">-</div>
-      <div class="bar-track"><div class="bar-fill" id="spentBar" style="width:0%"></div></div>
-      <div style="display:flex;gap:16px;margin-top:10px">
-        <div><div style="font-size:13px;font-weight:700;font-family:'Space Grotesk',sans-serif;color:var(--accent)" id="spendLimit">-</div><div style="font-size:10px;color:var(--muted)">limit</div></div>
-        <div><div style="font-size:13px;font-weight:700;font-family:'Space Grotesk',sans-serif;color:var(--accent)" id="balance">-</div><div style="font-size:10px;color:var(--muted)">balance</div></div>
+  <div class="usage-row">
+    <div class="usage-cards">
+      <div class="card anim" style="animation-delay:.05s">
+        <div class="card-label">Session</div>
+        <div class="usage-big" id="sessionPct">-</div>
+        <div class="usage-sub" id="sessionReset">-</div>
+        <div class="bar-track"><div class="bar-fill" id="sessionBar" style="width:0%"></div></div>
       </div>
+      <div class="card anim" style="animation-delay:.15s">
+        <div class="card-label">Sonnet</div>
+        <div class="usage-big" id="sonnetPct">-</div>
+        <div class="usage-sub" id="sonnetReset">-</div>
+        <div class="bar-track"><div class="bar-fill" id="sonnetBar" style="width:0%"></div></div>
+      </div>
+    </div>
+    <div class="usage-cards">
+      <div class="card anim" style="animation-delay:.1s">
+        <div class="card-label">Weekly (All Models)</div>
+        <div class="usage-big" id="weeklyAllPct">-</div>
+        <div class="usage-sub" id="weeklyAllReset">-</div>
+        <div class="bar-track"><div class="bar-fill" id="weeklyAllBar" style="width:0%"></div></div>
+      </div>
+      <div class="card anim" style="animation-delay:.2s">
+        <div class="card-label">Extra Spending</div>
+        <div class="usage-big" id="spentLabel">-</div>
+        <div class="usage-sub" id="spentReset">-</div>
+        <div class="bar-track"><div class="bar-fill" id="spentBar" style="width:0%"></div></div>
+        <div style="display:flex;gap:16px;margin-top:10px">
+          <div><div style="font-size:13px;font-weight:700;font-family:'Space Grotesk',sans-serif;color:var(--accent)" id="spendLimit">-</div><div style="font-size:10px;color:var(--muted)">limit</div></div>
+          <div><div style="font-size:13px;font-weight:700;font-family:'Space Grotesk',sans-serif;color:var(--accent)" id="balance">-</div><div style="font-size:10px;color:var(--muted)">balance</div></div>
+        </div>
+      </div>
+    </div>
+    <div class="card anim usage-chart-card" style="animation-delay:.25s">
+      <div class="card-label">Usage Over Time</div>
+      <div style="position:relative;flex:1;min-height:200px"><canvas id="usageChart"></canvas></div>
+      <div style="margin-top:8px;font-size:11px;font-family:'JetBrains Mono',monospace;color:var(--muted)"><span id="usageUpdated2">-</span></div>
     </div>
   </div>
   <div><div class="section-head">Active Agents</div><div id="agentList"></div><div class="optimizer-badge" id="optimizerBadge"></div></div>
@@ -635,34 +648,159 @@ async function fetchUsage() {
     document.getElementById('spendLimit').textContent='$'+d.spending.limit+' limit';
     document.getElementById('balance').textContent='$'+d.spending.balance.toFixed(2)+' bal';
     lastFetch.usage=Date.now();
-    var ts='Updated '+new Date().toLocaleTimeString();
+    var ts;
+    if (d.scrapedAt) {
+      var ago = Math.round((Date.now() - d.scrapedAt) / 60000);
+      ts = 'Scraped ' + new Date(d.scrapedAt).toLocaleTimeString();
+      if (ago > 0) ts += ' (' + ago + 'm ago)';
+    } else {
+      ts = 'Updated ' + new Date().toLocaleTimeString();
+    }
     if (!usageLive) ts += ' (snapshot)';
     document.getElementById('usageUpdated').textContent=ts;
     document.getElementById('usageUpdated2').textContent=ts;
   } catch{}
 }
 
+// ============ USAGE HISTORY CHART ============
+var usageChart = null;
+
+async function fetchUsageHistory() {
+  try {
+    var hist = await smartFetch('/api/usage-history', null);
+    if (!hist || !hist.length) return;
+    renderUsageChart(hist);
+  } catch {}
+}
+
+function renderUsageChart(hist) {
+  var ctx = document.getElementById('usageChart');
+  if (!ctx) return;
+
+  var labels = hist.map(function(h) { return new Date(h.t); });
+  var sessionData = hist.map(function(h) { return h.session; });
+  var weeklyData = hist.map(function(h) { return h.weekly; });
+  var sonnetData = hist.map(function(h) { return h.sonnet; });
+
+  var isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+  var gridColor = isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)';
+  var tickColor = isDark ? '#8b90a5' : '#5a5f78';
+
+  if (usageChart) { usageChart.destroy(); }
+
+  usageChart = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: labels,
+      datasets: [
+        {
+          label: 'Session %',
+          data: sessionData,
+          borderColor: '#6c63ff',
+          backgroundColor: 'rgba(108,99,255,0.1)',
+          borderWidth: 2,
+          pointRadius: 0,
+          pointHitRadius: 8,
+          fill: true,
+          tension: 0.3
+        },
+        {
+          label: 'Weekly %',
+          data: weeklyData,
+          borderColor: '#4fd1c5',
+          backgroundColor: 'rgba(79,209,197,0.05)',
+          borderWidth: 2,
+          pointRadius: 0,
+          pointHitRadius: 8,
+          fill: false,
+          tension: 0.3
+        },
+        {
+          label: 'Sonnet %',
+          data: sonnetData,
+          borderColor: '#f6ad55',
+          backgroundColor: 'rgba(246,173,85,0.05)',
+          borderWidth: 1.5,
+          pointRadius: 0,
+          pointHitRadius: 8,
+          fill: false,
+          tension: 0.3,
+          borderDash: [4, 3]
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      interaction: { mode: 'index', intersect: false },
+      plugins: {
+        legend: {
+          position: 'top',
+          labels: { color: tickColor, font: { family: "'DM Sans',sans-serif", size: 11 }, boxWidth: 12, padding: 12 }
+        },
+        tooltip: {
+          backgroundColor: isDark ? '#1a1d2b' : '#fff',
+          titleColor: isDark ? '#e8eaf0' : '#1a1d2b',
+          bodyColor: isDark ? '#8b90a5' : '#5a5f78',
+          borderColor: isDark ? '#262a3d' : '#d4d8e8',
+          borderWidth: 1,
+          padding: 10,
+          titleFont: { family: "'JetBrains Mono',monospace", size: 11 },
+          bodyFont: { family: "'DM Sans',sans-serif", size: 12 },
+          callbacks: {
+            title: function(items) { return new Date(items[0].parsed.x).toLocaleString(); },
+            label: function(item) { return ' ' + item.dataset.label + ': ' + item.parsed.y + '%'; }
+          }
+        }
+      },
+      scales: {
+        x: {
+          type: 'time',
+          time: { unit: 'hour', displayFormats: { hour: 'ha', day: 'MMM d' } },
+          ticks: { color: tickColor, font: { family: "'JetBrains Mono',monospace", size: 10 }, maxTicksLimit: 10 },
+          grid: { color: gridColor }
+        },
+        y: {
+          min: 0, max: 100,
+          ticks: { color: tickColor, font: { family: "'JetBrains Mono',monospace", size: 10 }, callback: function(v) { return v + '%'; } },
+          grid: { color: gridColor }
+        }
+      }
+    }
+  });
+}
+
 // ============ AGENTS ============
 function agentLabel(s) {
   var cwd=(s.cwd||'').replace(/\\/g,'/'),parts=cwd.split('/').filter(Boolean),last=parts[parts.length-1]||'',second=parts[parts.length-2]||'';
-  if(last==='.openclaw'||last==='openclaw')return{name:'Tyrone',ctx:'main orchestrator'};
-  if(last==='workspace'&&cwd.includes('openclaw'))return{name:'Workspace agent',ctx:'project ops'};
-  if(second==='WEBSITES')return{name:'Demo builder',ctx:last.replace(/-redesign$/,'').replace(/-/g,' ')};
-  if(second==='overnight'||last==='overnight')return{name:'Overnight brain',ctx:'nightly strategy'};
-  if(last.includes('job-hunt')||cwd.includes('career'))return{name:'Job search',ctx:'opportunities'};
-  if(last.includes('website-sales')||last.includes('lead'))return{name:'Lead gen',ctx:'prospecting'};
-  if(last.includes('idea')||last.includes('discovery'))return{name:'Idea scout',ctx:'research'};
-  if(second==='worktrees')return{name:'Workspace',ctx:s.task||last.replace(/-/g,' ')};
-  if(last==='claude-dashboard')return{name:'Dashboard',ctx:'this app'};
-  return{name:last||'Agent',ctx:second+'/'+last};
+  // Main interactive session
+  if(s.kind==='interactive'&&(last==='.openclaw'||last==='openclaw'))return{name:'Tyrone',ctx:'main orchestrator',type:'main'};
+  if(s.kind==='interactive')return{name:'Claude',ctx:last,type:'main'};
+  // Subagents spawned by Agent tool
+  if(last==='workspace'&&cwd.includes('openclaw'))return{name:'Workspace agent',ctx:'project ops',type:'sub'};
+  if(second==='WEBSITES')return{name:'Demo builder',ctx:last.replace(/-redesign$/,'').replace(/-/g,' '),type:'sub'};
+  if(second==='overnight'||last==='overnight')return{name:'Night brain',ctx:'nightly strategy',type:'sub'};
+  if(last.includes('job-hunt')||cwd.includes('career'))return{name:'Job search',ctx:'opportunities',type:'sub'};
+  if(last.includes('website-sales')||last.includes('lead'))return{name:'Lead gen',ctx:'prospecting',type:'sub'};
+  if(last.includes('idea')||last.includes('discovery'))return{name:'Idea scout',ctx:'research',type:'sub'};
+  if(second==='worktrees')return{name:'Subagent',ctx:s.task||last.replace(/-/g,' '),type:'sub'};
+  if(last==='claude-dashboard')return{name:'Dashboard',ctx:'this app',type:'sub'};
+  return{name:last||'Subagent',ctx:second+'/'+last,type:'sub'};
 }
 async function fetchAgents() {
   try {
     var d=await smartFetch('/api/agents',null);
     if(!d){document.getElementById('agentList').innerHTML='<div style="font-size:12px;color:var(--muted);padding:8px 0;font-style:italic">Connect locally for live agent data</div>';return;}
     var el=document.getElementById('agentList'),html='';
-    for(var s of(d.sessions||[])){if(!s.alive)continue;var l=agentLabel(s);html+='<div class="agent-row"><div class="agent-dot '+(s.kind==='interactive'?'green':'blue')+'"></div><span class="agent-name">'+l.name+'</span><span class="agent-ctx">'+l.ctx+'</span><span class="agent-time">'+fmt(s.uptimeMs)+'</span></div>';}
-    for(var r of(d.ocRuns||[])){html+='<div class="agent-row"><div class="agent-dot blue"></div><span class="agent-name">'+r.label+'</span><span class="agent-ctx">'+r.task+'</span><span class="agent-time">'+fmt(r.uptimeMs)+'</span></div>';}
+    var sessions = (d.sessions||[]).filter(function(s){return s.alive;});
+    // Sort: main sessions first, then subagents
+    sessions.sort(function(a,b){ return (a.kind==='interactive'?0:1)-(b.kind==='interactive'?0:1); });
+    for(var i=0;i<sessions.length;i++){
+      var s=sessions[i], l=agentLabel(s);
+      var dotClass = l.type==='main' ? 'green' : 'blue';
+      var tag = l.type==='sub' ? '<span style="font-size:9px;background:var(--accent-dim);color:var(--accent);padding:1px 6px;border-radius:4px;margin-left:6px">subagent</span>' : '';
+      html+='<div class="agent-row"><div class="agent-dot '+dotClass+'"></div><span class="agent-name">'+l.name+tag+'</span><span class="agent-ctx">'+l.ctx+'</span><span class="agent-time">'+fmt(s.uptimeMs)+'</span></div>';
+    }
     el.innerHTML=html||'<div style="font-size:12px;color:var(--muted);padding:8px 0;font-style:italic">None running</div>';
     try{var od=await smartFetch('/api/optimizer',null); if(!od){document.getElementById('optimizerBadge').textContent='';throw'no data';}var badge=document.getElementById('optimizerBadge'),fired=od.deployedThisCycle&&od.deployedThisCycle.length>0,pct=od.lastPct||0;
       if(fired){badge.textContent='Auto-deployed: '+od.deployedThisCycle.join(', ');badge.style.color='var(--orange)';}
@@ -855,7 +993,7 @@ async function fetchWorkSessions(){
 var lastFetch = { usage: 0, leads: 0, sessions: 0 };
 function updateAgos() {
   var now = Date.now();
-  var pairs = [['usageAgo', lastFetch.usage], ['usageAgo2', lastFetch.usage], ['leadsAgo', lastFetch.leads], ['sessionsAgo', lastFetch.sessions]];
+  var pairs = [['leadsAgo', lastFetch.leads], ['sessionsAgo', lastFetch.sessions]];
   pairs.forEach(function(p) {
     var el = document.getElementById(p[0]);
     if (!el || !p[1]) return;
@@ -868,8 +1006,8 @@ setInterval(updateAgos, 1000);
 // ============ INIT ============
 async function init(){
   for(var i=0;i<5;i++){try{var r=await fetch('/api/usage');if(r.ok)break;}catch{}await new Promise(function(r){setTimeout(r,300);});}
-  renderProjects();fetchUsage();fetchAgents();fetchLeads();fetchWorkSessions();
-  setInterval(fetchUsage,15000);setInterval(fetchAgents,5000);setInterval(fetchLeads,60000);setInterval(fetchWorkSessions,120000);
+  renderProjects();fetchUsage();fetchAgents();fetchLeads();fetchWorkSessions();fetchUsageHistory();
+  setInterval(fetchUsage,15000);setInterval(fetchAgents,5000);setInterval(fetchLeads,60000);setInterval(fetchWorkSessions,120000);setInterval(fetchUsageHistory,300000);
 }
 init();
 </script>

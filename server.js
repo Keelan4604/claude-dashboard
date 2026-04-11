@@ -104,6 +104,18 @@ const server = http.createServer((req, res) => {
     return;
   }
 
+  if (req.url === '/api/usage-history') {
+    try {
+      const hist = fs.readFileSync(path.join(__dirname, 'usage-history.json'), 'utf8');
+      res.writeHead(200, { 'Content-Type': 'application/json' });
+      res.end(hist);
+    } catch {
+      res.writeHead(200, { 'Content-Type': 'application/json' });
+      res.end('[]');
+    }
+    return;
+  }
+
   if (req.url === '/api/optimizer') {
     res.writeHead(200, { 'Content-Type': 'application/json' });
     res.end(JSON.stringify(optimizerStatus));
@@ -162,9 +174,8 @@ const server = http.createServer((req, res) => {
 
   if (req.url === '/api/agents') {
     const sessions = getActiveSessions();
-    const ocRuns = getOpenClawRuns();
     res.writeHead(200, { 'Content-Type': 'application/json' });
-    res.end(JSON.stringify({ sessions, ocRuns }));
+    res.end(JSON.stringify({ sessions }));
     return;
   }
 
@@ -186,7 +197,7 @@ const server = http.createServer((req, res) => {
   }
 
   if (req.url === '/' || req.url === '/index.html') {
-    const html = fs.readFileSync(path.join(__dirname, 'index.html'), 'utf8');
+    const html = fs.readFileSync(path.join(__dirname, 'public', 'index.html'), 'utf8');
     res.writeHead(200, { 'Content-Type': 'text/html' });
     res.end(html);
     return;

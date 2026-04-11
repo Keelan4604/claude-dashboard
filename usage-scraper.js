@@ -15,6 +15,7 @@ const path = require('path');
 
 const USAGE_FILE = path.join(__dirname, 'usage.json');
 const PUBLIC_USAGE_FILE = path.join(__dirname, 'public', 'usage.json');
+const HISTORY_FILE = path.join(__dirname, 'usage-history.json');
 const CDP_PORT = 9222;
 const SCRAPE_INTERVAL = 5 * 60 * 1000; // 5 minutes
 const SETTINGS_URL = 'https://claude.ai/settings/usage';
@@ -24,10 +25,33 @@ function log(msg) {
 }
 
 function writeUsage(data) {
+  data.scrapedAt = Date.now();
   const json = JSON.stringify(data, null, 2);
   fs.writeFileSync(USAGE_FILE, json);
   try { fs.writeFileSync(PUBLIC_USAGE_FILE, json); } catch {}
   log('Wrote usage.json: session=' + data.session.pct + '%, weekly=' + data.weeklyAll.pct + '%');
+
+  // Append to history
+  appendHistory(data);
+}
+
+function appendHistory(data) {
+  let history = [];
+  try { history = JSON.parse(fs.readFileSync(HISTORY_FILE, 'utf8')); } catch {}
+
+  history.push({
+    t: Date.now(),
+    session: data.session.pct,
+    weekly: data.weeklyAll.pct,
+    sonnet: data.sonnet.pct,
+    spent: data.spending.spent
+  });
+
+  // Keep last 7 days (7 * 24 * 12 = 2016 points at 5-min intervals)
+  const cutoff = Date.now() - 7 * 24 * 60 * 60 * 1000;
+  history = history.filter(h => h.t > cutoff);
+
+  fs.writeFileSync(HISTORY_FILE, JSON.stringify(history));
 }
 
 // Talk to Chrome DevTools Protocol

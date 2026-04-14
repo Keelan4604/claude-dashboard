@@ -1,5 +1,0 @@
-# Cloudflare Pages config - just serve static files, no build needed
-# The Node.js backend runs locally via Cloudflare Tunnel
-
-[pages]
-build_output_dir = "public"

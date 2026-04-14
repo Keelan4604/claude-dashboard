@@ -455,6 +455,38 @@
     border-radius: 8px; border: 1px solid var(--border);
   }
 
+  /* ============ RESEARCH TOGGLES ============ */
+  .research-grid { display: flex; flex-direction: column; gap: 10px; }
+  .research-item {
+    display: flex; align-items: center; gap: 14px;
+    padding: 12px 16px; background: var(--bg);
+    border: 1px solid var(--border); border-radius: 10px;
+    transition: all .25s;
+  }
+  .research-item:hover { border-color: var(--border-hover); }
+  .research-item.enabled { border-color: var(--green); background: rgba(104,211,145,0.04); }
+  .research-toggle-sw {
+    position: relative; width: 40px; height: 22px; flex-shrink: 0;
+    background: var(--surface3); border-radius: 11px; cursor: pointer;
+    transition: background .25s; border: none; padding: 0;
+  }
+  .research-toggle-sw.on { background: var(--green); }
+  .research-toggle-sw::after {
+    content: ''; position: absolute; top: 3px; left: 3px;
+    width: 16px; height: 16px; border-radius: 50%;
+    background: #fff; transition: transform .25s;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+  }
+  .research-toggle-sw.on::after { transform: translateX(18px); }
+  .research-label { flex: 1; }
+  .research-label-name { font-size: 13px; font-weight: 600; }
+  .research-label-desc { font-size: 11px; color: var(--dim); margin-top: 2px; }
+  .research-email-row {
+    display: flex; align-items: center; gap: 10px;
+    margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--border);
+    font-size: 12px; color: var(--dim);
+  }
+
   ::-webkit-scrollbar { width: 6px; }
   ::-webkit-scrollbar-track { background: transparent; }
   ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
@@ -528,6 +560,7 @@
     </div>
   </div>
   <div><div class="section-head">Active Agents</div><div id="agentList"></div><div class="optimizer-badge" id="optimizerBadge"></div></div>
+  <div style="margin-top:24px"><div class="section-head">Nightly Research Targets</div><div class="card anim" style="animation-delay:.3s;padding:20px" id="researchPanel"><div style="color:var(--muted);font-size:12px">Loading config...</div></div></div>
   <div style="margin-top:24px"><div class="section-head">All Project Lanes</div><div class="project-list" id="projectList"></div></div>
   <div class="panel-footer"><span><span class="timestamp" id="usageUpdated">-</span><span class="seconds-ago" id="usageAgo"></span></span><span>Refreshes every 15s</span></div>
 </div>
@@ -1003,10 +1036,76 @@ function updateAgos() {
 }
 setInterval(updateAgos, 1000);
 
+// ============ RESEARCH CONFIG ============
+var researchConfig = null;
+
+async function fetchResearchConfig() {
+  try {
+    var d = await smartFetch('/api/research-config', null);
+    if (!d || !d.areas) { document.getElementById('researchPanel').innerHTML='<div style="color:var(--muted);font-size:12px">Connect locally to manage research config</div>'; return; }
+    researchConfig = d;
+    renderResearchPanel();
+  } catch {}
+}
+
+function renderResearchPanel() {
+  if (!researchConfig) return;
+  var el = document.getElementById('researchPanel');
+  var html = '<div class="research-grid">';
+  var keys = Object.keys(researchConfig.areas);
+  for (var i = 0; i < keys.length; i++) {
+    var k = keys[i], a = researchConfig.areas[k];
+    html += '<div class="research-item' + (a.enabled ? ' enabled' : '') + '">';
+    html += '<button class="research-toggle-sw' + (a.enabled ? ' on' : '') + '" onclick="toggleResearch(\'' + k + '\')" title="Toggle ' + a.label + '"></button>';
+    html += '<div class="research-label"><div class="research-label-name">' + a.label + '</div><div class="research-label-desc">' + a.description + '</div></div>';
+    html += '</div>';
+  }
+  html += '</div>';
+  html += '<div class="research-email-row">';
+  html += '<button class="research-toggle-sw' + (researchConfig.emailMorningReport ? ' on' : '') + '" onclick="toggleResearchEmail()" title="Toggle morning email"></button>';
+  html += '<span>Email morning research report to keelan4604@gmail.com</span>';
+  html += '</div>';
+  if (researchConfig.lastUpdated) {
+    html += '<div style="font-size:10px;color:var(--muted);margin-top:8px;font-family:\'JetBrains Mono\',monospace">Last updated: ' + new Date(researchConfig.lastUpdated).toLocaleString() + '</div>';
+  }
+  el.innerHTML = html;
+}
+
+function toggleResearch(key) {
+  if (!researchConfig || !researchConfig.areas[key]) return;
+  researchConfig.areas[key].enabled = !researchConfig.areas[key].enabled;
+  saveResearchConfig();
+}
+
+function toggleResearchEmail() {
+  if (!researchConfig) return;
+  researchConfig.emailMorningReport = !researchConfig.emailMorningReport;
+  saveResearchConfig();
+}
+
+async function saveResearchConfig() {
+  renderResearchPanel();
+  try {
+    await fetch(LOCAL_API + '/api/research-config', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(researchConfig)
+    });
+  } catch {
+    try {
+      await fetch('/api/research-config', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(researchConfig)
+      });
+    } catch {}
+  }
+}
+
 // ============ INIT ============
 async function init(){
   for(var i=0;i<5;i++){try{var r=await fetch('/api/usage');if(r.ok)break;}catch{}await new Promise(function(r){setTimeout(r,300);});}
-  renderProjects();fetchUsage();fetchAgents();fetchLeads();fetchWorkSessions();fetchUsageHistory();
+  renderProjects();fetchUsage();fetchAgents();fetchLeads();fetchWorkSessions();fetchUsageHistory();fetchResearchConfig();
   setInterval(fetchUsage,15000);setInterval(fetchAgents,5000);setInterval(fetchLeads,60000);setInterval(fetchWorkSessions,120000);setInterval(fetchUsageHistory,300000);
 }
 init();

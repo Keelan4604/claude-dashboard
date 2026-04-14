@@ -159,6 +159,39 @@ const server = http.createServer((req, res) => {
     return;
   }
 
+  // Research config
+  const RESEARCH_CONFIG = path.join(AI_DIR, 'Research-Archive', 'research-config.json');
+
+  if (req.url === '/api/research-config' && req.method === 'GET') {
+    try {
+      const config = fs.readFileSync(RESEARCH_CONFIG, 'utf8');
+      res.writeHead(200, { 'Content-Type': 'application/json' });
+      res.end(config);
+    } catch {
+      res.writeHead(200, { 'Content-Type': 'application/json' });
+      res.end('{"areas":{}}');
+    }
+    return;
+  }
+
+  if (req.url === '/api/research-config' && req.method === 'POST') {
+    let body = '';
+    req.on('data', c => body += c);
+    req.on('end', () => {
+      try {
+        const data = JSON.parse(body);
+        data.lastUpdated = new Date().toISOString();
+        fs.writeFileSync(RESEARCH_CONFIG, JSON.stringify(data, null, 2));
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.end('{"ok":true}');
+      } catch {
+        res.writeHead(400);
+        res.end('{"error":"bad json"}');
+      }
+    });
+    return;
+  }
+
   if (req.url === '/api/agents') {
     const sessions = getActiveSessions();
     res.writeHead(200, { 'Content-Type': 'application/json' });

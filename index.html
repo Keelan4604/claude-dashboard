@@ -6,7 +6,7 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4/dist/chart.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@3/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=DM+Sans:wght@400;500;600;700&display=swap');
+  @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
 
   * { margin: 0; padding: 0; box-sizing: border-box; }
 
@@ -33,20 +33,20 @@
   }
 
   [data-theme="dark"] {
-    --bg: #0f1117;
-    --surface: #161922;
-    --surface2: #1c2030;
-    --surface3: #242838;
-    --border: #2a2e42;
-    --border-hover: #3a3f58;
-    --text: #d8dce8;
+    --bg: #0c0e14;
+    --surface: #141620;
+    --surface2: #1a1d2b;
+    --surface3: #222538;
+    --border: #282c42;
+    --border-hover: #383d58;
+    --text: #e0e4f0;
     --dim: #8890a8;
     --muted: #505870;
-    --accent: var(--mint);
-    --accent-dim: var(--mint-dim);
-    --glow: rgba(79,209,197,0.25);
-    --card-shadow: 0 2px 8px rgba(0,0,0,0.35);
-    --card-hover-shadow: 0 4px 20px rgba(79,209,197,0.08);
+    --accent: var(--electric);
+    --accent-dim: var(--electric-dim);
+    --glow: rgba(99,102,241,0.25);
+    --card-shadow: 0 2px 8px rgba(0,0,0,0.4);
+    --card-hover-shadow: 0 4px 20px rgba(99,102,241,0.1);
   }
 
   [data-theme="light"] {
@@ -68,7 +68,7 @@
 
   html { font-size: 14px; }
   body {
-    font-family: 'DM Sans', sans-serif;
+    font-family: 'Plus Jakarta Sans', sans-serif;
     background: var(--bg);
     color: var(--text);
     height: 100vh;
@@ -92,7 +92,7 @@
     gap: 16px;
   }
   .logo {
-    font-family: 'Space Grotesk', sans-serif;
+    font-family: 'Outfit', sans-serif;
     font-size: 17px;
     font-weight: 700;
     color: var(--accent);
@@ -209,14 +209,14 @@
   @media (max-width: 900px) { .usage-row { grid-template-columns: 1fr 1fr; } .usage-chart-card { grid-column: 1 / -1; } }
   .usage-big {
     font-size: 32px; font-weight: 700;
-    font-family: 'Space Grotesk', sans-serif;
+    font-family: 'Outfit', sans-serif;
     letter-spacing: -1px; color: var(--accent);
   }
   .usage-sub { font-size: 11px; color: var(--muted); font-family: 'JetBrains Mono', monospace; margin-top: 3px; }
   .bar-track { width: 100%; height: 6px; background: var(--surface2); border-radius: 3px; overflow: hidden; margin-top: 12px; }
   .bar-fill {
     height: 100%; border-radius: 3px;
-    background: linear-gradient(90deg, var(--mint), #68d391);
+    background: linear-gradient(90deg, var(--electric), #818cf8);
     transition: width .8s cubic-bezier(.16,1,.3,1);
   }
   .bar-fill.warn { background: linear-gradient(90deg, var(--orange), var(--gold)); }
@@ -256,7 +256,7 @@
     font-size: 22px; flex-shrink: 0;
   }
   .project-meta { flex: 1; min-width: 0; }
-  .project-name { font-size: 15px; font-weight: 700; font-family: 'Space Grotesk', sans-serif; }
+  .project-name { font-size: 15px; font-weight: 700; font-family: 'Outfit', sans-serif; }
   .project-oneliner { font-size: 12px; color: var(--dim); margin-top: 3px; }
   .project-tags { display: flex; gap: 6px; margin-top: 6px; flex-wrap: wrap; }
   .ptag {
@@ -277,7 +277,7 @@
     padding: 20px; font-size: 13px; color: var(--dim); line-height: 1.75;
   }
   .project-content h3 {
-    font-family: 'Space Grotesk', sans-serif;
+    font-family: 'Outfit', sans-serif;
     font-size: 13px; font-weight: 700; color: var(--text);
     margin: 18px 0 8px 0; text-transform: uppercase; letter-spacing: .5px;
     padding-bottom: 6px; border-bottom: 1px solid var(--border);
@@ -302,7 +302,7 @@
     padding: 12px; text-align: center;
   }
   .stat-box .stat-num {
-    font-family: 'Space Grotesk', sans-serif; font-size: 24px;
+    font-family: 'Outfit', sans-serif; font-size: 24px;
     font-weight: 700; color: var(--accent);
   }
   .stat-box .stat-lbl { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: .5px; margin-top: 2px; }
@@ -505,8 +505,8 @@
   </div>
   <div class="controls">
     <div class="palette-bar" id="paletteBar">
-      <div class="palette-dot" style="background:#6c63ff" onclick="setAccent('electric','#6c63ff')" title="Electric"></div>
-      <div class="palette-dot active" style="background:#4fd1c5" onclick="setAccent('mint','#4fd1c5')" title="Mint"></div>
+      <div class="palette-dot active" style="background:#6c63ff" onclick="setAccent('electric','#6c63ff')" title="Electric"></div>
+      <div class="palette-dot" style="background:#4fd1c5" onclick="setAccent('mint','#4fd1c5')" title="Mint"></div>
       <div class="palette-dot" style="background:#f6ad55" onclick="setAccent('amber','#f6ad55')" title="Amber"></div>
       <div class="palette-dot" style="background:#fc8181" onclick="setAccent('coral','#fc8181')" title="Coral"></div>
       <div class="palette-dot" style="background:#68d391" onclick="setAccent('emerald','#68d391')" title="Emerald"></div>
@@ -515,7 +515,7 @@
       <div class="palette-dot" style="background:#63b3ed" onclick="setAccent('sky','#63b3ed')" title="Sky"></div>
     </div>
     <button class="theme-toggle" onclick="toggleTheme()"><span id="themeIcon">&#9789;</span></button>
-    <span style="font-size:10px;font-weight:600;color:var(--accent);font-family:'JetBrains Mono',monospace;letter-spacing:1px;margin-left:8px;padding:3px 8px;border:1px solid var(--border);border-radius:6px;background:var(--accent-dim)">v1</span>
+    <span style="font-size:10px;font-weight:600;color:var(--accent);font-family:'JetBrains Mono',monospace;letter-spacing:1px;margin-left:8px;padding:3px 8px;border:1px solid var(--border);border-radius:6px;background:var(--accent-dim)">v2</span>
   </div>
 </div>
 
@@ -730,8 +730,8 @@ function renderUsageChart(hist) {
         {
           label: 'Session %',
           data: sessionData,
-          borderColor: '#4fd1c5',
-          backgroundColor: 'rgba(79,209,197,0.08)',
+          borderColor: '#6c63ff',
+          backgroundColor: 'rgba(108,99,255,0.08)',
           borderWidth: 2,
           pointRadius: 0,
           pointHitRadius: 8,
@@ -741,8 +741,8 @@ function renderUsageChart(hist) {
         {
           label: 'Weekly %',
           data: weeklyData,
-          borderColor: '#4fd1c5',
-          backgroundColor: 'rgba(79,209,197,0.05)',
+          borderColor: '#818cf8',
+          backgroundColor: 'rgba(129,140,248,0.05)',
           borderWidth: 2,
           pointRadius: 0,
           pointHitRadius: 8,

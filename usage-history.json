@@ -1,1 +1,152 @@
-[]
+[
+  {
+    "t": 1776048210127,
+    "session": 7,
+    "weekly": 15,
+    "sonnet": 9
+  },
+  {
+    "t": 1776051810127,
+    "session": 11,
+    "weekly": 14,
+    "sonnet": 12
+  },
+  {
+    "t": 1776055410127,
+    "session": 13,
+    "weekly": 19,
+    "sonnet": 12
+  },
+  {
+    "t": 1776059010127,
+    "session": 21,
+    "weekly": 16,
+    "sonnet": 14
+  },
+  {
+    "t": 1776062610127,
+    "session": 19,
+    "weekly": 19,
+    "sonnet": 14
+  },
+  {
+    "t": 1776066210127,
+    "session": 24,
+    "weekly": 22,
+    "sonnet": 15
+  },
+  {
+    "t": 1776069810127,
+    "session": 32,
+    "weekly": 19,
+    "sonnet": 17
+  },
+  {
+    "t": 1776073410127,
+    "session": 30,
+    "weekly": 21,
+    "sonnet": 15
+  },
+  {
+    "t": 1776077010127,
+    "session": 37,
+    "weekly": 23,
+    "sonnet": 17
+  },
+  {
+    "t": 1776080610127,
+    "session": 39,
+    "weekly": 25,
+    "sonnet": 16
+  },
+  {
+    "t": 1776084210127,
+    "session": 46,
+    "weekly": 25,
+    "sonnet": 18
+  },
+  {
+    "t": 1776087810127,
+    "session": 49,
+    "weekly": 30,
+    "sonnet": 20
+  },
+  {
+    "t": 1776091410127,
+    "session": 51,
+    "weekly": 29,
+    "sonnet": 19
+  },
+  {
+    "t": 1776095010127,
+    "session": 53,
+    "weekly": 32,
+    "sonnet": 20
+  },
+  {
+    "t": 1776098610127,
+    "session": 59,
+    "weekly": 32,
+    "sonnet": 23
+  },
+  {
+    "t": 1776102210127,
+    "session": 63,
+    "weekly": 32,
+    "sonnet": 23
+  },
+  {
+    "t": 1776105810127,
+    "session": 64,
+    "weekly": 35,
+    "sonnet": 24
+  },
+  {
+    "t": 1776109410127,
+    "session": 69,
+    "weekly": 33,
+    "sonnet": 22
+  },
+  {
+    "t": 1776113010127,
+    "session": 71,
+    "weekly": 38,
+    "sonnet": 23
+  },
+  {
+    "t": 1776116610127,
+    "session": 79,
+    "weekly": 39,
+    "sonnet": 24
+  },
+  {
+    "t": 1776120210127,
+    "session": 76,
+    "weekly": 37,
+    "sonnet": 25
+  },
+  {
+    "t": 1776123810127,
+    "session": 83,
+    "weekly": 39,
+    "sonnet": 26
+  },
+  {
+    "t": 1776127410127,
+    "session": 87,
+    "weekly": 42,
+    "sonnet": 26
+  },
+  {
+    "t": 1776131010127,
+    "session": 88,
+    "weekly": 43,
+    "sonnet": 27
+  },
+  {
+    "t": 1776134610127,
+    "session": 95,
+    "weekly": 45,
+    "sonnet": 29
+  }
+]

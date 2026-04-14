@@ -20,7 +20,4 @@
     "puppeteer-core": "^24.40.0",
     "ws": "^8.20.0"
   },
-  "optionalDependencies": {
-    "cue-sdk": "^4.0.84"
-  }
 }

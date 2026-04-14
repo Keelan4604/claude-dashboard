@@ -216,31 +216,6 @@ const server = http.createServer((req, res) => {
     return;
   }
 
-  // iCUE profile switch - triggered by HA automation
-  if (req.url === '/api/icue-profile' && req.method === 'POST') {
-    let body = '';
-    req.on('data', c => body += c);
-    req.on('end', () => {
-      try {
-        const { profile } = JSON.parse(body);
-        // Send the hotkey assigned in iCUE for this profile
-        // Default: Ctrl+Shift+F12 for "sons of the forst" (off scene)
-        const hotkey = profile === 'default' ? '^+{F11}' : '^+{F12}';
-        const ps = `powershell -Command "Add-Type -AssemblyName System.Windows.Forms; [System.Windows.Forms.SendKeys]::SendWait('${hotkey}')"`;
-        require('child_process').exec(ps, (err) => {
-          if (err) console.error('iCUE hotkey error:', err.message);
-          else console.log('iCUE profile switch sent:', profile || 'sons of the forst');
-        });
-        res.writeHead(200, { 'Content-Type': 'application/json' });
-        res.end('{"ok":true,"profile":"' + (profile || 'sons of the forst') + '"}');
-      } catch {
-        res.writeHead(400);
-        res.end('{"error":"bad json"}');
-      }
-    });
-    return;
-  }
-
   if (req.url === '/' || req.url === '/index.html') {
     const html = fs.readFileSync(path.join(__dirname, 'public', 'index.html'), 'utf8');
     res.writeHead(200, { 'Content-Type': 'text/html' });

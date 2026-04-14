@@ -17,8 +17,10 @@
   "dependencies": {
     "better-sqlite3": "^12.8.0",
     "chrome-cookies-secure": "^3.0.1",
-    "cue-sdk": "^4.0.84",
     "puppeteer-core": "^24.40.0",
     "ws": "^8.20.0"
+  },
+  "optionalDependencies": {
+    "cue-sdk": "^4.0.84"
   }
 }

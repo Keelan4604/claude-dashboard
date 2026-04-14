@@ -33,20 +33,20 @@
   }
 
   [data-theme="dark"] {
-    --bg: #0c0e14;
-    --surface: #13151e;
-    --surface2: #1a1d2b;
-    --surface3: #222638;
-    --border: #262a3d;
-    --border-hover: #363b54;
-    --text: #e8eaf0;
-    --dim: #8b90a5;
-    --muted: #4a4f68;
-    --accent: var(--electric);
-    --accent-dim: var(--electric-dim);
-    --glow: var(--electric-glow);
-    --card-shadow: 0 2px 12px rgba(0,0,0,0.5);
-    --card-hover-shadow: 0 6px 30px rgba(108,99,255,0.12);
+    --bg: #0f1117;
+    --surface: #161922;
+    --surface2: #1c2030;
+    --surface3: #242838;
+    --border: #2a2e42;
+    --border-hover: #3a3f58;
+    --text: #d8dce8;
+    --dim: #8890a8;
+    --muted: #505870;
+    --accent: var(--mint);
+    --accent-dim: var(--mint-dim);
+    --glow: rgba(79,209,197,0.25);
+    --card-shadow: 0 2px 8px rgba(0,0,0,0.35);
+    --card-hover-shadow: 0 4px 20px rgba(79,209,197,0.08);
   }
 
   [data-theme="light"] {
@@ -216,7 +216,7 @@
   .bar-track { width: 100%; height: 6px; background: var(--surface2); border-radius: 3px; overflow: hidden; margin-top: 12px; }
   .bar-fill {
     height: 100%; border-radius: 3px;
-    background: linear-gradient(90deg, var(--electric), #818cf8);
+    background: linear-gradient(90deg, var(--mint), #68d391);
     transition: width .8s cubic-bezier(.16,1,.3,1);
   }
   .bar-fill.warn { background: linear-gradient(90deg, var(--orange), var(--gold)); }
@@ -505,8 +505,8 @@
   </div>
   <div class="controls">
     <div class="palette-bar" id="paletteBar">
-      <div class="palette-dot active" style="background:#6c63ff" onclick="setAccent('electric','#6c63ff')" title="Electric"></div>
-      <div class="palette-dot" style="background:#4fd1c5" onclick="setAccent('mint','#4fd1c5')" title="Mint"></div>
+      <div class="palette-dot" style="background:#6c63ff" onclick="setAccent('electric','#6c63ff')" title="Electric"></div>
+      <div class="palette-dot active" style="background:#4fd1c5" onclick="setAccent('mint','#4fd1c5')" title="Mint"></div>
       <div class="palette-dot" style="background:#f6ad55" onclick="setAccent('amber','#f6ad55')" title="Amber"></div>
       <div class="palette-dot" style="background:#fc8181" onclick="setAccent('coral','#fc8181')" title="Coral"></div>
       <div class="palette-dot" style="background:#68d391" onclick="setAccent('emerald','#68d391')" title="Emerald"></div>
@@ -515,7 +515,7 @@
       <div class="palette-dot" style="background:#63b3ed" onclick="setAccent('sky','#63b3ed')" title="Sky"></div>
     </div>
     <button class="theme-toggle" onclick="toggleTheme()"><span id="themeIcon">&#9789;</span></button>
-    <span style="font-size:10px;color:var(--muted);font-family:'JetBrains Mono',monospace;letter-spacing:.5px;margin-left:4px">v1</span>
+    <span style="font-size:10px;font-weight:600;color:var(--accent);font-family:'JetBrains Mono',monospace;letter-spacing:1px;margin-left:8px;padding:3px 8px;border:1px solid var(--border);border-radius:6px;background:var(--accent-dim)">v1</span>
   </div>
 </div>
 
@@ -730,8 +730,8 @@ function renderUsageChart(hist) {
         {
           label: 'Session %',
           data: sessionData,
-          borderColor: '#6c63ff',
-          backgroundColor: 'rgba(108,99,255,0.1)',
+          borderColor: '#4fd1c5',
+          backgroundColor: 'rgba(79,209,197,0.08)',
           borderWidth: 2,
           pointRadius: 0,
           pointHitRadius: 8,

@@ -1,21 +1,21 @@
 {
   "session": {
-    "pct": 97,
-    "reset": "Resets in 2 hr 53 min"
+    "pct": 0,
+    "reset": "Scraper not running"
   },
   "weeklyAll": {
-    "pct": 43,
-    "reset": "Resets Wed 8:00 PM"
+    "pct": 0,
+    "reset": "Scraper not running"
   },
   "sonnet": {
-    "pct": 7,
-    "reset": "Resets Wed 8:00 PM"
+    "pct": 0,
+    "reset": "Scraper not running"
   },
   "spending": {
-    "spent": 30.15,
-    "limit": 30,
-    "balance": 90.62,
-    "pct": 100,
-    "reset": "Resets May 1"
+    "spent": 0,
+    "limit": 40,
+    "balance": 0,
+    "pct": 0,
+    "reset": ""
   }
 }

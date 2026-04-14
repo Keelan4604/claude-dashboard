@@ -229,9 +229,14 @@ const server = http.createServer((req, res) => {
 
 server.on('error', (err) => {
   if (err.code === 'EADDRINUSE') {
-    console.log(`Port ${PORT} in use, killing old process and retrying...`);
-    require('child_process').execSync(`for /f "tokens=5" %a in ('netstat -aon ^| findstr :${PORT}') do taskkill /F /PID %a`, { shell: 'cmd.exe', stdio: 'ignore' });
-    setTimeout(() => server.listen(PORT, '0.0.0.0'), 1000);
+    console.log(`Port ${PORT} in use, attempting to kill old process...`);
+    try {
+      require('child_process').execSync(
+        `powershell -Command "Get-NetTCPConnection -LocalPort ${PORT} -ErrorAction SilentlyContinue | ForEach-Object { Stop-Process -Id $_.OwningProcess -Force -ErrorAction SilentlyContinue }"`,
+        { stdio: 'ignore', timeout: 5000 }
+      );
+    } catch {}
+    setTimeout(() => server.listen(PORT, '0.0.0.0'), 2000);
   } else {
     console.error('Server error:', err);
   }

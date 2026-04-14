@@ -19,6 +19,14 @@ const { exec } = require('child_process');
 const USAGE_FILE = path.join(__dirname, 'usage.json');
 const AI_DIR = 'C:\\Users\\Keela\\Desktop\\AI';
 const LOG_FILE = path.join(AI_DIR, 'Research-Archive', 'token-optimizer.log');
+const DISABLE_FLAG = path.join(__dirname, 'token-watcher-disabled.flag');
+
+// Check if disabled
+if (fs.existsSync(DISABLE_FLAG)) {
+  console.log('[TOKEN-WATCHER] Disabled via flag file. Delete token-watcher-disabled.flag to re-enable.');
+  module.exports = { optimizerStatus: { armed: false, mode: 'disabled', lastPct: 0, deployedThisCycle: [] } };
+  return;
+}
 
 const CHECK_INTERVAL_MS = 5 * 60 * 1000; // 5 minutes
 const SESSION_HOURS = 6;

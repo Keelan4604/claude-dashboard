@@ -1,21 +1,22 @@
 {
   "session": {
-    "pct": 97,
-    "reset": "Resets in 2 hr 53 min"
+    "pct": 46,
+    "reset": "Resets in 2 min"
   },
   "weeklyAll": {
-    "pct": 43,
+    "pct": 67,
     "reset": "Resets Wed 8:00 PM"
   },
   "sonnet": {
-    "pct": 7,
+    "pct": 12,
     "reset": "Resets Wed 8:00 PM"
   },
   "spending": {
-    "spent": 30.15,
-    "limit": 30,
-    "balance": 90.62,
-    "pct": 100,
-    "reset": "Resets May 1"
-  }
+    "spent": 36.36,
+    "limit": 40,
+    "balance": 84.41,
+    "pct": 91,
+    "reset": ""
+  },
+  "scrapedAt": 1776081444793
 }

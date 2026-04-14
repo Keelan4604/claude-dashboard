@@ -1,20 +1,16 @@
 {
   "name": "claude-dashboard",
   "version": "1.0.0",
-  "description": "",
-  "main": "main.js",
+  "description": "Tyrone Command Center",
+  "main": "server.js",
   "scripts": {
-    "start": "electron .",
     "server": "node server.js"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "type": "commonjs",
-  "devDependencies": {
-    "electron": "^41.2.0"
-  },
-  "dependencies": {
+  "optionalDependencies": {
     "better-sqlite3": "^12.8.0",
     "chrome-cookies-secure": "^3.0.1",
     "puppeteer-core": "^24.40.0",

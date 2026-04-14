@@ -17,9 +17,8 @@ const path = require('path');
 const { exec } = require('child_process');
 
 const USAGE_FILE = path.join(__dirname, 'usage.json');
-const LOG_FILE = path.join('C:\\Users\\Keela\\.openclaw\\workspace', 'token-optimizer.log');
-const WORKSPACE = 'C:\\Users\\Keela\\.openclaw\\workspace';
-const OPENCLAW_CLI = 'C:\\Users\\Keela\\AppData\\Roaming\\npm\\node_modules\\openclaw\\dist\\index.js';
+const AI_DIR = 'C:\\Users\\Keela\\Desktop\\AI';
+const LOG_FILE = path.join(AI_DIR, 'Research-Archive', 'token-optimizer.log');
 
 const CHECK_INTERVAL_MS = 5 * 60 * 1000; // 5 minutes
 const SESSION_HOURS = 6;
@@ -55,17 +54,14 @@ function readUsage() {
   try { return JSON.parse(fs.readFileSync(USAGE_FILE, 'utf8')); } catch { return null; }
 }
 
-function sendWhatsApp(message) {
-  const cmd = `node "${OPENCLAW_CLI}" agent --channel whatsapp --deliver --message "${message.replace(/"/g, "'")}"`;
-  exec(cmd, (err) => {
-    if (err) log('WhatsApp send failed: ' + err.message);
-    else log('WhatsApp sent: ' + message.slice(0, 80));
-  });
+function sendNotification(message) {
+  // WhatsApp via OpenClaw discontinued. Log only.
+  log('NOTIFICATION: ' + message);
 }
 
 function spawnAgent(agentPromptFile, label, model) {
   model = model || 'claude-sonnet-4-6';
-  const promptPath = path.join(WORKSPACE, 'agents', agentPromptFile);
+  const promptPath = path.join(AI_DIR, 'Research-Archive', agentPromptFile);
   log('Spawning agent: ' + label + ' (' + agentPromptFile + ') on ' + model);
 
   let prompt;
@@ -74,20 +70,20 @@ function spawnAgent(agentPromptFile, label, model) {
     return;
   }
 
-  const tmpPrompt = path.join(WORKSPACE, 'tmp-' + label.replace(/\s/g, '-') + '-' + Date.now() + '.md');
+  const tmpPrompt = path.join(AI_DIR, 'tmp-' + label.replace(/\s/g, '-') + '-' + Date.now() + '.md');
   fs.writeFileSync(tmpPrompt, prompt);
 
   const proc = exec(
-    'cd /d "' + WORKSPACE + '" && claude --print --dangerously-skip-permissions --model ' + model + ' -p "@' + tmpPrompt + '"',
+    'cd /d "' + AI_DIR + '" && claude --print --dangerously-skip-permissions --model ' + model + ' -p "@' + tmpPrompt + '"',
     { shell: 'cmd.exe', timeout: 45 * 60 * 1000 },
     (err, stdout) => {
       try { fs.unlinkSync(tmpPrompt); } catch {}
       if (err) log('Agent ' + label + ' error: ' + err.message);
       else {
         log('Agent ' + label + ' completed. Output: ' + stdout.length + ' chars');
-        const outFile = path.join(WORKSPACE, 'overnight', 'optimizer-' + label + '-' + new Date().toISOString().split('T')[0] + '.log');
+        const outFile = path.join(AI_DIR, 'Research-Archive', 'Overnight', 'optimizer-' + label + '-' + new Date().toISOString().split('T')[0] + '.log');
         try {
-          fs.mkdirSync(path.join(WORKSPACE, 'overnight'), { recursive: true });
+          fs.mkdirSync(path.join(AI_DIR, 'Research-Archive', 'Overnight'), { recursive: true });
           fs.writeFileSync(outFile, stdout);
         } catch {}
       }
@@ -98,17 +94,17 @@ function spawnAgent(agentPromptFile, label, model) {
 }
 
 function spawnNightBrain() {
-  const promptPath = path.join(WORKSPACE, 'night-brain.md');
+  const promptPath = path.join(AI_DIR, 'Research-Archive', 'night-brain.md');
   let prompt;
   try { prompt = fs.readFileSync(promptPath, 'utf8'); } catch (e) {
     log('Failed to read night-brain.md: ' + e.message);
     return;
   }
-  const tmpPrompt = path.join(WORKSPACE, 'tmp-nightbrain-' + Date.now() + '.md');
+  const tmpPrompt = path.join(AI_DIR, 'tmp-nightbrain-' + Date.now() + '.md');
   fs.writeFileSync(tmpPrompt, prompt);
 
   const proc = exec(
-    'cd /d "' + WORKSPACE + '" && claude --print --dangerously-skip-permissions --model claude-opus-4-6 -p "@' + tmpPrompt + '"',
+    'cd /d "' + AI_DIR + '" && claude --print --dangerously-skip-permissions --model claude-opus-4-6 -p "@' + tmpPrompt + '"',
     { shell: 'cmd.exe', timeout: 60 * 60 * 1000 },
     (err, stdout) => {
       try { fs.unlinkSync(tmpPrompt); } catch {}
@@ -148,7 +144,7 @@ function deployWithLabel(agentFile, label, model, reason) {
   optimizerStatus.lastFired = new Date().toISOString();
   optimizerStatus.mode = 'deploying';
   spawnAgent(agentFile, label, model);
-  sendWhatsApp('Token optimizer: ' + reason);
+  sendNotification('Token optimizer: ' + reason);
 }
 
 function check() {
@@ -210,7 +206,7 @@ function check() {
     optimizerStatus.deployedThisCycle.push('night-brain');
     optimizerStatus.lastFired = new Date().toISOString();
     spawnNightBrain();
-    sendWhatsApp('Session expiring soon (' + pct + '% at ' + hoursElapsed.toFixed(1) + 'h). Night brain deployed to maximize value.');
+    sendNotification('Session expiring soon (' + pct + '% at ' + hoursElapsed.toFixed(1) + 'h). Night brain deployed to maximize value.');
   }
 
   // ============ PCT-BASED SAFETY NET ============
@@ -227,7 +223,7 @@ function check() {
     optimizerStatus.deployedThisCycle.push('night-brain');
     optimizerStatus.lastFired = new Date().toISOString();
     spawnNightBrain();
-    sendWhatsApp('Session at ' + pct + '%. Night brain deployed to burn remaining tokens.');
+    sendNotification('Session at ' + pct + '%. Night brain deployed to burn remaining tokens.');
   }
 
   // Update mode

@@ -14,9 +14,8 @@ const { exec, execSync } = require('child_process');
 const fs = require('fs');
 const path = require('path');
 
-const WORKSPACE = 'C:\\Users\\Keela\\.openclaw\\workspace';
-const OPENCLAW_CLI = 'C:\\Users\\Keela\\AppData\\Roaming\\npm\\node_modules\\openclaw\\dist\\index.js';
-const LOG_FILE = path.join(WORKSPACE, 'session-loop.log');
+const AI_DIR = 'C:\\Users\\Keela\\Desktop\\AI';
+const LOG_FILE = path.join(AI_DIR, 'Research-Archive', 'session-loop.log');
 const CHECK_INTERVAL = 10 * 60 * 1000; // 10 minutes
 
 let lastAutoStart = 0;
@@ -28,11 +27,9 @@ function log(msg) {
   try { fs.appendFileSync(LOG_FILE, line + '\n'); } catch {}
 }
 
-function sendWhatsApp(message) {
-  const cmd = 'node "' + OPENCLAW_CLI + '" agent --channel whatsapp --deliver --message "' + message.replace(/"/g, "'") + '"';
-  exec(cmd, (err) => {
-    if (err) log('WhatsApp failed: ' + err.message);
-  });
+function sendNotification(message) {
+  // WhatsApp via OpenClaw discontinued. Log only.
+  log('NOTIFICATION: ' + message);
 }
 
 function isClaudeRunning() {
@@ -62,7 +59,7 @@ function startProductiveSession() {
   // Read strategy to know what to work on
   let priority = 'website-sales';
   try {
-    const strategy = fs.readFileSync(path.join(WORKSPACE, 'strategy.md'), 'utf8');
+    const strategy = fs.readFileSync(path.join(AI_DIR, 'Website-Business', 'Strategy', 'strategy.md'), 'utf8');
     // Simple heuristic: if there are unsent emails, prioritize outreach
     if (strategy.includes('drafts sitting unsent') || strategy.includes('needs to review')) {
       priority = 'website-sales';
@@ -92,48 +89,48 @@ function startProductiveSession() {
   lastAutoStart = Date.now();
 
   if (label === 'night-brain') {
-    const promptPath = path.join(WORKSPACE, 'night-brain.md');
+    const promptPath = path.join(AI_DIR, 'Research-Archive', 'night-brain.md');
     let prompt;
     try { prompt = fs.readFileSync(promptPath, 'utf8'); } catch (e) {
       log('Failed to read night-brain.md: ' + e.message);
       return;
     }
-    const tmpPrompt = path.join(WORKSPACE, 'tmp-autoloop-' + Date.now() + '.md');
+    const tmpPrompt = path.join(AI_DIR, 'tmp-autoloop-' + Date.now() + '.md');
     fs.writeFileSync(tmpPrompt, prompt);
 
     exec(
-      'cd /d "' + WORKSPACE + '" && claude --print --dangerously-skip-permissions --model ' + model + ' -p "@' + tmpPrompt + '"',
+      'cd /d "' + AI_DIR + '" && claude --print --dangerously-skip-permissions --model ' + model + ' -p "@' + tmpPrompt + '"',
       { shell: 'cmd.exe', timeout: 90 * 60 * 1000 },
       (err, stdout) => {
         try { fs.unlinkSync(tmpPrompt); } catch {}
         log('Auto-session (' + label + ') ' + (err ? 'error: ' + err.message : 'completed. ' + stdout.length + ' chars'));
-        const outFile = path.join(WORKSPACE, 'overnight', 'autoloop-' + label + '-' + new Date().toISOString().replace(/[:.]/g, '-') + '.log');
-        try { fs.mkdirSync(path.join(WORKSPACE, 'overnight'), { recursive: true }); fs.writeFileSync(outFile, stdout || ''); } catch {}
+        const outFile = path.join(AI_DIR, 'Research-Archive', 'Overnight', 'autoloop-' + label + '-' + new Date().toISOString().replace(/[:.]/g, '-') + '.log');
+        try { fs.mkdirSync(path.join(AI_DIR, 'Research-Archive', 'Overnight'), { recursive: true }); fs.writeFileSync(outFile, stdout || ''); } catch {}
       }
     );
   } else {
-    const promptPath = path.join(WORKSPACE, 'agents', agentFile);
+    const promptPath = path.join(AI_DIR, 'Research-Archive', agentFile);
     let prompt;
     try { prompt = fs.readFileSync(promptPath, 'utf8'); } catch (e) {
       log('Failed to read ' + promptPath + ': ' + e.message);
       return;
     }
-    const tmpPrompt = path.join(WORKSPACE, 'tmp-autoloop-' + Date.now() + '.md');
+    const tmpPrompt = path.join(AI_DIR, 'tmp-autoloop-' + Date.now() + '.md');
     fs.writeFileSync(tmpPrompt, prompt);
 
     exec(
-      'cd /d "' + WORKSPACE + '" && claude --print --dangerously-skip-permissions --model ' + model + ' -p "@' + tmpPrompt + '"',
+      'cd /d "' + AI_DIR + '" && claude --print --dangerously-skip-permissions --model ' + model + ' -p "@' + tmpPrompt + '"',
       { shell: 'cmd.exe', timeout: 60 * 60 * 1000 },
       (err, stdout) => {
         try { fs.unlinkSync(tmpPrompt); } catch {}
         log('Auto-session (' + label + ') ' + (err ? 'error: ' + err.message : 'completed. ' + stdout.length + ' chars'));
-        const outFile = path.join(WORKSPACE, 'overnight', 'autoloop-' + label + '-' + new Date().toISOString().replace(/[:.]/g, '-') + '.log');
-        try { fs.mkdirSync(path.join(WORKSPACE, 'overnight'), { recursive: true }); fs.writeFileSync(outFile, stdout || ''); } catch {}
+        const outFile = path.join(AI_DIR, 'Research-Archive', 'Overnight', 'autoloop-' + label + '-' + new Date().toISOString().replace(/[:.]/g, '-') + '.log');
+        try { fs.mkdirSync(path.join(AI_DIR, 'Research-Archive', 'Overnight'), { recursive: true }); fs.writeFileSync(outFile, stdout || ''); } catch {}
       }
     );
   }
 
-  sendWhatsApp('Session loop: No active session detected. Auto-started ' + label + ' agent (' + model + ') at ' + new Date().toLocaleTimeString() + '.');
+  sendNotification('Session loop: No active session detected. Auto-started ' + label + ' agent (' + model + ') at ' + new Date().toLocaleTimeString() + '.');
   log('Auto-started: ' + label + ' on ' + model);
 }
 

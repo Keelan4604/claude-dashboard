@@ -5,7 +5,7 @@ const path = require('path');
 const PORT = 3847;
 const DATA_FILE = path.join(__dirname, 'usage.json');
 const SESSIONS_DIR = path.join(require('os').homedir(), '.claude', 'sessions');
-const OPENCLAW_RUNS = path.join(require('os').homedir(), '.openclaw', 'subagents', 'runs.json');
+const AI_DIR = path.join(require('os').homedir(), 'Desktop', 'AI');
 
 function getActiveSessions() {
   try {
@@ -58,21 +58,8 @@ function getActiveSessions() {
 }
 
 function getOpenClawRuns() {
-  try {
-    const d = JSON.parse(fs.readFileSync(OPENCLAW_RUNS, 'utf8'));
-    const runs = Object.values(d.runs || {});
-    const now = Date.now();
-    // Active = started but not ended, within last 2 hours
-    return runs
-      .filter(r => !r.endedAt && r.startedAt && (now - r.startedAt) < 7200000)
-      .map(r => ({
-        label: r.label || 'OpenClaw Agent',
-        task: (r.task || '').slice(0, 80),
-        model: (r.model || '').replace('openai-codex/', ''),
-        startedAt: r.startedAt,
-        uptimeMs: now - r.startedAt,
-      }));
-  } catch { return []; }
+  // OpenClaw discontinued - return empty
+  return [];
 }
 
 // Default/seed data - will be overwritten by scraper or manual edits
@@ -137,8 +124,8 @@ const server = http.createServer((req, res) => {
   if (req.url === '/api/work-sessions') {
     // Read workspace memory files and strategy for work session data
     const sessions = [];
-    const memDir = path.join(require('os').homedir(), '.openclaw', 'workspace', 'memory');
-    const stratFile = path.join(require('os').homedir(), '.openclaw', 'workspace', 'strategy.md');
+    const memDir = path.join(AI_DIR, 'Research-Archive', 'Memory');
+    const stratFile = path.join(AI_DIR, 'Website-Business', 'Strategy', 'strategy.md');
     try {
       const files = fs.readdirSync(memDir).filter(f => f.endsWith('.md')).sort().reverse().slice(0, 10);
       for (const f of files) {
@@ -150,7 +137,7 @@ const server = http.createServer((req, res) => {
       }
     } catch {}
     // Also read overnight logs
-    const overnightDir = path.join(require('os').homedir(), '.openclaw', 'workspace', 'overnight');
+    const overnightDir = path.join(AI_DIR, 'Research-Archive', 'Overnight');
     try {
       const files = fs.readdirSync(overnightDir).filter(f => f.endsWith('.md') || f.endsWith('.log')).sort().reverse().slice(0, 5);
       for (const f of files) {

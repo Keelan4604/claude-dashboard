@@ -10,7 +10,7 @@ const path = require('path');
 
 const HA_URL = 'https://ha.keelanodoherty.org';
 const HA_TOKEN = fs.readFileSync(
-  path.join(require('os').homedir(), '.openclaw', 'secrets', 'ha_token.txt'), 'utf8'
+  path.join(require('os').homedir(), 'Desktop', 'AI', 'Secrets', 'ha_token.txt'), 'utf8'
 ).trim();
 
 // iCUE profile GUIDs (from tree.cueprofileorder)

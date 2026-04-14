@@ -1,3 +1,10 @@
 node_modules/
 .wrangler/
 openrgb/
+scraper-chrome-data/
+scraper-profile/
+*.db
+scraper.log
+electron-debug.log
+last-scrape.txt
+sons

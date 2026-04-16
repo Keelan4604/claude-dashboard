@@ -7,8 +7,9 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4/dist/chart.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@3/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom@2/dist/chartjs-plugin-zoom.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/phaser@3.88.2/dist/phaser.min.js"></script>
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
+  @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Outfit:wght@300;400;500;600;700&display=swap');
 
   * { margin: 0; padding: 0; box-sizing: border-box; }
 
@@ -32,15 +33,35 @@
     --orange-dim: rgba(246,173,85,0.12);
     --rose: #f687b3;
     --rose-dim: rgba(246,135,179,0.12);
+    /* Office Theme palette */
+    --office-blue: #1B4F8A;
+    --office-blue-dim: rgba(27,79,138,0.15);
+    --office-green: #4A7C3F;
+    --office-green-dim: rgba(74,124,63,0.12);
+    --office-beige: #D4C5A9;
+    --office-tan: #B8A98A;
+    --office-paper: #F5F0E8;
+    --office-paper-dim: rgba(245,240,232,0.08);
+    /* Character color identities */
+    --char-tyrone: #1B4F8A;
+    --char-dwight: #8B6914;
+    --char-jim: #4A7C3F;
+    --char-pam: #C75B7A;
+    --char-ryan: #6B4C9A;
+    --char-oscar: #2E7D9E;
+    --char-kelly: #D4567A;
+    --char-kevin: #7A5C3A;
+    --char-stanley: #4A4A6A;
+    --char-michael: #1B4F8A;
   }
 
   [data-theme="dark"] {
-    --bg: #0c0e14;
-    --surface: #141620;
-    --surface2: #1a1d2b;
-    --surface3: #222538;
-    --border: #282c42;
-    --border-hover: #383d58;
+    --bg: #0d1117;
+    --surface: #111827;
+    --surface2: #1a2035;
+    --surface3: #1e2d4a;
+    --border: #1f3460;
+    --border-hover: #2a4a80;
     --text: #e0e4f0;
     --dim: #8890a8;
     --muted: #505870;
@@ -70,7 +91,7 @@
 
   html { font-size: 14px; }
   body {
-    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-family: 'IBM Plex Sans', sans-serif;
     background: var(--bg);
     color: var(--text);
     height: 100vh;
@@ -94,10 +115,10 @@
     gap: 16px;
   }
   .logo {
-    font-family: 'Outfit', sans-serif;
+    font-family: 'IBM Plex Sans', sans-serif;
     font-size: 17px;
     font-weight: 700;
-    color: var(--accent);
+    color: var(--office-blue);
     letter-spacing: -.5px;
     display: flex;
     align-items: center;
@@ -106,8 +127,8 @@
   .logo-dot {
     width: 9px; height: 9px;
     border-radius: 50%;
-    background: var(--accent);
-    box-shadow: 0 0 12px var(--glow);
+    background: var(--office-blue);
+    box-shadow: 0 0 12px rgba(27,79,138,0.4);
     animation: glow-pulse 3s ease-in-out infinite;
   }
   @keyframes glow-pulse {
@@ -186,8 +207,39 @@
   }
   .section-head::before {
     content: ''; width: 3px; height: 14px; border-radius: 2px;
-    background: var(--accent);
+    background: var(--office-blue);
   }
+  .section-head-office {
+    font-size: 11px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: .7px; color: var(--office-blue);
+    margin-bottom: 10px; display: flex; align-items: center; gap: 8px;
+    font-family: 'IBM Plex Sans', sans-serif;
+  }
+  .section-head-office::before {
+    content: ''; width: 3px; height: 14px; border-radius: 2px;
+    background: var(--office-blue);
+  }
+  .usage-compact {
+    display: flex; align-items: center; gap: 6px;
+    font-family: 'JetBrains Mono', monospace; font-size: 12px;
+    padding: 4px 12px; border: 1px solid var(--border);
+    border-radius: 8px; background: var(--surface2); flex-shrink: 0;
+  }
+  .usage-compact-item { display: flex; align-items: center; gap: 5px; }
+  .usage-compact-label { font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: .5px; color: var(--muted); }
+  .usage-compact-value { font-size: 13px; font-weight: 700; color: var(--office-blue); }
+  .usage-compact-sep { color: var(--border-hover); font-size: 14px; }
+  @keyframes zzz-float {
+    0% { opacity: 0; transform: translateY(0); }
+    50% { opacity: 0.7; }
+    100% { opacity: 0; transform: translateY(-12px); }
+  }
+  .agent-sleeping .agent-dot { animation: none; opacity: 0.3; }
+  .agent-sleeping::after {
+    content: 'zzz'; font-size: 9px; color: var(--muted);
+    animation: zzz-float 2.5s ease-in-out infinite; margin-left: 4px;
+  }
+  @media (max-width: 700px) { #office-room-container { display: none; } }
   .panel-footer {
     margin-top: 20px; padding-top: 14px;
     border-top: 1px solid var(--border);
@@ -346,7 +398,7 @@
     box-shadow: var(--card-shadow); transition: all .25s;
   }
   .calling-stat:hover { border-color: var(--border-hover); transform: translateY(-1px); }
-  .calling-stat .num { font-family: 'Space Grotesk',sans-serif; font-size: 22px; font-weight: 700; }
+  .calling-stat .num { font-family: 'IBM Plex Sans',sans-serif; font-size: 22px; font-weight: 700; }
   .calling-stat .lbl { font-size: 9px; color: var(--muted); text-transform: uppercase; letter-spacing: .5px; margin-top: 3px; }
   .calling-stat.green .num { color: var(--green); }
   .calling-stat.orange .num { color: var(--orange); }
@@ -504,11 +556,17 @@
 
 <div class="drag"></div>
 <div class="top-bar">
-  <div class="logo"><div class="logo-dot"></div>Tyrone</div>
+  <div class="logo"><div class="logo-dot"></div><div><div>Tyrone</div><div style="font-size:8px;font-weight:400;color:var(--muted);letter-spacing:.5px;margin-top:-2px">Dunder Mifflin Paper Co.</div></div></div>
   <div class="tab-bar">
     <div class="tab active" data-tab="usage">Home</div>
+    <div class="tab" data-tab="operations">Operations</div>
     <div class="tab" data-tab="calling">Cold Calling <span class="badge" id="callCount">0</span></div>
     <div class="tab" data-tab="sessions">Work Sessions</div>
+  </div>
+  <div class="usage-compact" id="usageCompact">
+    <span class="usage-compact-item"><span class="usage-compact-label">Session</span><span class="usage-compact-value" id="sessionPctBar">-</span></span>
+    <span class="usage-compact-sep">/</span>
+    <span class="usage-compact-item"><span class="usage-compact-label">Weekly</span><span class="usage-compact-value" id="weeklyPctBar">-</span></span>
   </div>
   <div class="controls">
     <div class="palette-bar" id="paletteBar">
@@ -522,64 +580,39 @@
       <div class="palette-dot" style="background:#63b3ed" onclick="setAccent('sky','#63b3ed')" title="Sky"></div>
     </div>
     <button class="theme-toggle" onclick="toggleTheme()"><span id="themeIcon">&#9789;</span></button>
-    <span style="font-size:10px;font-weight:600;color:var(--accent);font-family:'JetBrains Mono',monospace;letter-spacing:1px;margin-left:8px;padding:3px 8px;border:1px solid var(--border);border-radius:6px;background:var(--accent-dim)">v3</span>
+    <span style="font-size:10px;font-weight:600;color:var(--accent);font-family:'JetBrains Mono',monospace;letter-spacing:1px;margin-left:8px;padding:3px 8px;border:1px solid var(--border);border-radius:6px;background:var(--accent-dim)">v4</span>
   </div>
 </div>
 
 <!-- ============ USAGE ============ -->
 <div class="panel active" id="panel-usage">
-  <div class="usage-row">
-    <div class="usage-cards">
-      <div class="card anim" style="animation-delay:.05s">
-        <div class="card-label">Session</div>
-        <div class="usage-big" id="sessionPct">-</div>
-        <div class="usage-sub" id="sessionReset">-</div>
-        <div class="bar-track"><div class="bar-fill" id="sessionBar" style="width:0%"></div></div>
-      </div>
-      <div class="card anim" style="animation-delay:.15s">
-        <div class="card-label">Sonnet</div>
-        <div class="usage-big" id="sonnetPct">-</div>
-        <div class="usage-sub" id="sonnetReset">-</div>
-        <div class="bar-track"><div class="bar-fill" id="sonnetBar" style="width:0%"></div></div>
+  <div class="section-head-office">The Office <span style="font-size:9px;font-weight:400;text-transform:none;letter-spacing:0;color:var(--muted);margin-left:4px">· Dunder Mifflin Scranton</span></div>
+  <div id="office-room-container" style="width:100%;height:420px;border-radius:14px;overflow:hidden;border:1px solid var(--border);background:#0d1117;margin-bottom:20px;position:relative"></div>
+  <div class="card anim usage-chart-card" style="animation-delay:.1s;margin-bottom:20px">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+      <div class="card-label" style="margin-bottom:0">Usage Over Time</div>
+      <div class="chart-range-btns" id="chartRangeBtns">
+        <button class="range-btn" data-range="6h">6H</button>
+        <button class="range-btn" data-range="24h">24H</button>
+        <button class="range-btn active" data-range="2d">2D</button>
+        <button class="range-btn" data-range="1w">1W</button>
+        <button class="range-btn" data-range="all">ALL</button>
       </div>
     </div>
-    <div class="usage-cards">
-      <div class="card anim" style="animation-delay:.1s">
-        <div class="card-label">Weekly (All Models)</div>
-        <div class="usage-big" id="weeklyAllPct">-</div>
-        <div class="usage-sub" id="weeklyAllReset">-</div>
-        <div class="bar-track"><div class="bar-fill" id="weeklyAllBar" style="width:0%"></div></div>
-      </div>
-      <div class="card anim" style="animation-delay:.2s">
-        <div class="card-label">Extra Spending</div>
-        <div class="usage-big" id="spentLabel">-</div>
-        <div class="usage-sub" id="spentReset">-</div>
-        <div class="bar-track"><div class="bar-fill" id="spentBar" style="width:0%"></div></div>
-        <div style="display:flex;gap:16px;margin-top:10px">
-          <div><div style="font-size:13px;font-weight:700;font-family:'Space Grotesk',sans-serif;color:var(--accent)" id="spendLimit">-</div><div style="font-size:10px;color:var(--muted)">limit</div></div>
-          <div><div style="font-size:13px;font-weight:700;font-family:'Space Grotesk',sans-serif;color:var(--accent)" id="balance">-</div><div style="font-size:10px;color:var(--muted)">balance</div></div>
-        </div>
-      </div>
-    </div>
-    <div class="card anim usage-chart-card" style="animation-delay:.25s">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
-        <div class="card-label" style="margin-bottom:0">Usage Over Time</div>
-        <div class="chart-range-btns" id="chartRangeBtns">
-          <button class="range-btn" data-range="6h">6H</button>
-          <button class="range-btn" data-range="24h">24H</button>
-          <button class="range-btn active" data-range="2d">2D</button>
-          <button class="range-btn" data-range="1w">1W</button>
-          <button class="range-btn" data-range="all">ALL</button>
-        </div>
-      </div>
-      <div style="position:relative;flex:1;min-height:300px"><canvas id="usageChart"></canvas></div>
-      <div style="margin-top:8px;font-size:11px;font-family:'JetBrains Mono',monospace;color:var(--muted)"><span id="usageUpdated2">-</span> · drag to pan, scroll to zoom</div>
-    </div>
+    <div style="position:relative;flex:1;min-height:200px"><canvas id="usageChart"></canvas></div>
+    <div style="margin-top:8px;font-size:11px;font-family:'JetBrains Mono',monospace;color:var(--muted)"><span id="usageUpdated2">-</span> · drag to pan, scroll to zoom</div>
   </div>
   <div><div class="section-head">Active Agents</div><div id="agentList"></div><div class="optimizer-badge" id="optimizerBadge"></div></div>
-  <div style="margin-top:24px"><div class="section-head">Nightly Research Targets</div><div class="card anim" style="animation-delay:.3s;padding:20px" id="researchPanel"><div style="color:var(--muted);font-size:12px">Loading config...</div></div><div class="card anim" style="animation-delay:.35s;padding:14px 20px;margin-top:10px" id="schedulerStatus"><div style="color:var(--muted);font-size:11px">Loading scheduler status...</div></div></div>
-  <div style="margin-top:24px"><div class="section-head">All Project Lanes</div><div class="project-list" id="projectList"></div></div>
   <div class="panel-footer"><span><span class="timestamp" id="usageUpdated">-</span><span class="seconds-ago" id="usageAgo"></span></span><span>Refreshes every 15s</span></div>
+</div>
+
+<!-- ============ OPERATIONS ============ -->
+<div class="panel" id="panel-operations">
+  <div class="section-head">Nightly Research Targets</div>
+  <div class="card anim" style="animation-delay:.1s;padding:20px" id="researchPanelOps"><div style="color:var(--muted);font-size:12px">Loading config...</div></div>
+  <div class="card anim" style="animation-delay:.15s;padding:14px 20px;margin-top:10px" id="schedulerStatusOps"><div style="color:var(--muted);font-size:11px">Loading scheduler status...</div></div>
+  <div style="margin-top:24px"><div class="section-head">All Project Lanes</div><div class="project-list" id="projectListOps"></div></div>
+  <div class="panel-footer"><span><span class="timestamp" id="opsUpdated">-</span></span><span>Research refreshes every 30s</span></div>
 </div>
 
 <!-- ============ COLD CALLING ============ -->
@@ -680,23 +713,11 @@ async function fetchUsage() {
   try {
     var d = await smartFetch('/api/usage', '/usage.json');
     if (!d) return;
-    document.getElementById('sessionPct').textContent=d.session.pct+'%';
-    document.getElementById('sessionReset').textContent=d.session.reset;
-    setBar('sessionBar',d.session.pct);
-    document.getElementById('weeklyAllPct').textContent=d.weeklyAll.pct+'%';
-    document.getElementById('weeklyAllReset').textContent=d.weeklyAll.reset;
-    setBar('weeklyAllBar',d.weeklyAll.pct);
-    document.getElementById('sonnetPct').textContent=d.sonnet.pct+'%';
-    document.getElementById('sonnetReset').textContent=d.sonnet.reset;
-    setBar('sonnetBar',d.sonnet.pct);
-    document.getElementById('spentLabel').textContent='$'+d.spending.spent.toFixed(2);
-    var resetTxt = d.spending.reset || '';
-    if (resetTxt === 'Resets in 4') resetTxt = 'Resets in 4 days';
-    document.getElementById('spentReset').textContent=resetTxt;
-    var spendPct = d.spending.limit > 0 ? Math.min(100, Math.round((d.spending.spent / d.spending.limit) * 100)) : 0;
-    setBar('spentBar', spendPct);
-    document.getElementById('spendLimit').textContent='$'+d.spending.limit+' limit';
-    document.getElementById('balance').textContent='$'+d.spending.balance.toFixed(2)+' bal';
+    // Top bar compact numbers
+    var sBar = document.getElementById('sessionPctBar');
+    var wBar = document.getElementById('weeklyPctBar');
+    if (sBar) { sBar.textContent = d.session.pct+'%'; sBar.style.color = d.session.pct>=90?'var(--coral)':d.session.pct>=70?'var(--gold)':'var(--office-blue)'; }
+    if (wBar) { wBar.textContent = d.weeklyAll.pct+'%'; wBar.style.color = d.weeklyAll.pct>=90?'var(--coral)':d.weeklyAll.pct>=70?'var(--gold)':'var(--office-blue)'; }
     lastFetch.usage=Date.now();
     var ts;
     if (d.scrapedAt) {
@@ -707,8 +728,8 @@ async function fetchUsage() {
       ts = 'Updated ' + new Date().toLocaleTimeString();
     }
     if (!usageLive) ts += ' (snapshot)';
-    document.getElementById('usageUpdated').textContent=ts;
-    document.getElementById('usageUpdated2').textContent=ts;
+    var uEl = document.getElementById('usageUpdated'); if (uEl) uEl.textContent=ts;
+    var u2El = document.getElementById('usageUpdated2'); if (u2El) u2El.textContent=ts;
   } catch{}
 }
 
@@ -824,7 +845,7 @@ function renderUsageChart(hist) {
       plugins: {
         legend: {
           position: 'top',
-          labels: { color: tickColor, font: { family: "'DM Sans',sans-serif", size: 11 }, boxWidth: 12, padding: 12 }
+          labels: { color: tickColor, font: { family: "'IBM Plex Sans',sans-serif", size: 11 }, boxWidth: 12, padding: 12 }
         },
         tooltip: {
           backgroundColor: isDark ? '#1a1d2b' : '#fff',
@@ -834,7 +855,7 @@ function renderUsageChart(hist) {
           borderWidth: 1,
           padding: 10,
           titleFont: { family: "'JetBrains Mono',monospace", size: 11 },
-          bodyFont: { family: "'DM Sans',sans-serif", size: 12 },
+          bodyFont: { family: "'IBM Plex Sans',sans-serif", size: 12 },
           callbacks: {
             title: function(items) { return new Date(items[0].parsed.x).toLocaleString(); },
             label: function(item) { return ' ' + item.dataset.label + ': ' + item.parsed.y + '%'; }
@@ -867,21 +888,25 @@ function renderUsageChart(hist) {
 }
 
 // ============ AGENTS ============
+var CHAR_MAP = {'Tyrone':'Tyrone','Night brain':'Dwight','Lead gen':'Jim','Website sales':'Jim','Demo builder':'Pam','Job search':'Ryan','Dashboard':'Oscar','Idea scout':'Kelly','Subagent':'Kevin','Workspace agent':'Stanley','Claude':'Michael'};
+var CHAR_COLORS = {'Tyrone':'var(--char-tyrone)','Dwight':'var(--char-dwight)','Jim':'var(--char-jim)','Pam':'var(--char-pam)','Ryan':'var(--char-ryan)','Oscar':'var(--char-oscar)','Kelly':'var(--char-kelly)','Kevin':'var(--char-kevin)','Stanley':'var(--char-stanley)','Michael':'var(--char-michael)'};
+
 function agentLabel(s) {
   var cwd=(s.cwd||'').replace(/\\/g,'/'),parts=cwd.split('/').filter(Boolean),last=parts[parts.length-1]||'',second=parts[parts.length-2]||'';
-  // Main interactive session
-  if(s.kind==='interactive'&&(last==='AI'||last==='Keela'))return{name:'Tyrone',ctx:'main orchestrator',type:'main'};
-  if(s.kind==='interactive')return{name:'Claude',ctx:last,type:'main'};
-  // Subagents spawned by Agent tool
-  if(last==='AI'&&cwd.includes('Desktop'))return{name:'Workspace agent',ctx:'project ops',type:'sub'};
-  if(second==='WEBSITES')return{name:'Demo builder',ctx:last.replace(/-redesign$/,'').replace(/-/g,' '),type:'sub'};
-  if(second==='overnight'||last==='overnight')return{name:'Night brain',ctx:'nightly strategy',type:'sub'};
-  if(last.includes('job-hunt')||cwd.includes('career'))return{name:'Job search',ctx:'opportunities',type:'sub'};
-  if(last.includes('website-sales')||last.includes('lead'))return{name:'Lead gen',ctx:'prospecting',type:'sub'};
-  if(last.includes('idea')||last.includes('discovery'))return{name:'Idea scout',ctx:'research',type:'sub'};
-  if(second==='worktrees')return{name:'Subagent',ctx:s.task||last.replace(/-/g,' '),type:'sub'};
-  if(last==='claude-dashboard')return{name:'Dashboard',ctx:'this app',type:'sub'};
-  return{name:last||'Subagent',ctx:second+'/'+last,type:'sub'};
+  var result;
+  if(s.kind==='interactive'&&(last==='AI'||last==='Keela'))result={name:'Tyrone',ctx:'main orchestrator',type:'main'};
+  else if(s.kind==='interactive')result={name:'Claude',ctx:last,type:'main'};
+  else if(last==='AI'&&cwd.includes('Desktop'))result={name:'Workspace agent',ctx:'project ops',type:'sub'};
+  else if(second==='WEBSITES')result={name:'Demo builder',ctx:last.replace(/-redesign$/,'').replace(/-/g,' '),type:'sub'};
+  else if(second==='overnight'||last==='overnight')result={name:'Night brain',ctx:'nightly strategy',type:'sub'};
+  else if(last.includes('job-hunt')||cwd.includes('career'))result={name:'Job search',ctx:'opportunities',type:'sub'};
+  else if(last.includes('website-sales')||last.includes('lead'))result={name:'Lead gen',ctx:'prospecting',type:'sub'};
+  else if(last.includes('idea')||last.includes('discovery'))result={name:'Idea scout',ctx:'research',type:'sub'};
+  else if(second==='worktrees')result={name:'Subagent',ctx:s.task||last.replace(/-/g,' '),type:'sub'};
+  else if(last==='claude-dashboard')result={name:'Dashboard',ctx:'this app',type:'sub'};
+  else result={name:last||'Subagent',ctx:second+'/'+last,type:'sub'};
+  result.char = CHAR_MAP[result.name] || result.name;
+  return result;
 }
 async function fetchAgents() {
   try {
@@ -893,11 +918,14 @@ async function fetchAgents() {
     sessions.sort(function(a,b){ return (a.kind==='interactive'?0:1)-(b.kind==='interactive'?0:1); });
     for(var i=0;i<sessions.length;i++){
       var s=sessions[i], l=agentLabel(s);
-      var dotClass = l.type==='main' ? 'green' : 'blue';
+      var charColor = CHAR_COLORS[l.char] || 'var(--accent)';
+      var charBadge = l.char !== l.name ? '<span style="font-size:9px;color:'+charColor+';opacity:.8;margin-left:4px">('+l.char+')</span>' : '';
       var tag = l.type==='sub' ? '<span style="font-size:9px;background:var(--accent-dim);color:var(--accent);padding:1px 6px;border-radius:4px;margin-left:6px">subagent</span>' : '';
-      html+='<div class="agent-row"><div class="agent-dot '+dotClass+'"></div><span class="agent-name">'+l.name+tag+'</span><span class="agent-ctx">'+l.ctx+'</span><span class="agent-time">'+fmt(s.uptimeMs)+'</span></div>';
+      html+='<div class="agent-row"><div class="agent-dot" style="background:'+charColor+';box-shadow:0 0 8px '+charColor+'"></div><span class="agent-name">'+l.name+charBadge+tag+'</span><span class="agent-ctx">'+l.ctx+'</span><span class="agent-time">'+fmt(s.uptimeMs)+'</span></div>';
     }
     el.innerHTML=html||'<div style="font-size:12px;color:var(--muted);padding:8px 0;font-style:italic">None running</div>';
+    // Push to Phaser scene
+    if (typeof OfficeEventBus !== 'undefined' && OfficeEventBus) { OfficeEventBus.emit('agents-update', sessions); }
     try{var od=await smartFetch('/api/optimizer',null); if(!od){document.getElementById('optimizerBadge').textContent='';throw'no data';}var badge=document.getElementById('optimizerBadge'),fired=od.deployedThisCycle&&od.deployedThisCycle.length>0,pct=od.lastPct||0;
       if(fired){badge.textContent='Auto-deployed: '+od.deployedThisCycle.join(', ');badge.style.color='var(--orange)';}
       else if(pct>=80){badge.textContent='Optimizer: armed - '+pct+'%';badge.style.color='var(--gold)';}
@@ -959,7 +987,8 @@ var PROJECTS = [
 ];
 
 function renderProjects() {
-  var el = document.getElementById('projectList'), html = '';
+  var targets = ['projectList','projectListOps'].map(function(id){return document.getElementById(id);}).filter(Boolean);
+  var html = '';
   PROJECTS.forEach(function(p, i) {
     html += '<div class="project-card anim" style="animation-delay:' + (i*0.04) + 's" id="proj-' + i + '">' +
       '<div class="project-header" onclick="document.getElementById(\'proj-'+i+'\').classList.toggle(\'expanded\')">' +
@@ -974,7 +1003,7 @@ function renderProjects() {
       '<div class="project-body"><div class="project-content">' + p.body + '</div></div>' +
     '</div>';
   });
-  el.innerHTML = html;
+  targets.forEach(function(el){ el.innerHTML = html; });
 }
 
 // ============ LEADS ============
@@ -1115,7 +1144,7 @@ function fmtHM(h, m) { return String(h).padStart(2,'0') + ':' + String(m||0).pad
 
 function renderResearchPanel() {
   if (!researchConfig) return;
-  var el = document.getElementById('researchPanel');
+  var el = document.getElementById('researchPanelOps') || document.getElementById('researchPanel');
   var html = '<div class="research-grid">';
   var keys = Object.keys(researchConfig.areas);
   for (var i = 0; i < keys.length; i++) {
@@ -1179,7 +1208,7 @@ async function fetchSchedulerStatus() {
   try {
     var d = await smartFetch('/api/scheduler-status', null);
     if (!d || !d.areas) return;
-    var el = document.getElementById('schedulerStatus');
+    var el = document.getElementById('schedulerStatusOps') || document.getElementById('schedulerStatus');
     if (!el) return;
     var html = '';
     var keys = Object.keys(d.areas);
@@ -1220,11 +1249,256 @@ async function saveResearchConfig() {
   }
 }
 
+// ============ OFFICE EVENTBUS ============
+var OfficeEventBus = null;
+
+// ============ OFFICE SCENE ============
+class OfficeScene extends Phaser.Scene {
+  constructor() {
+    super({ key: 'OfficeScene' });
+    this.agents = {};
+    this.desks = [];
+    this.charGraphics = null;
+    this.labelTexts = {};
+  }
+
+  create() {
+    OfficeEventBus = this.events;
+    this.events.on('agents-update', this.handleAgentsUpdate, this);
+
+    var W = this.scale.width, H = this.scale.height;
+    var g = this.add.graphics();
+
+    // Floor
+    g.fillStyle(0x0d1117, 1); g.fillRect(0, 0, W, H);
+    g.fillStyle(0x111827, 1); g.fillRect(10, 10, W-20, H-20);
+
+    // Subtle grid lines for floor texture
+    g.lineStyle(1, 0x1a2035, 0.3);
+    for (var gx = 10; gx < W; gx += 40) g.lineBetween(gx, 10, gx, H-10);
+    for (var gy = 10; gy < H; gy += 40) g.lineBetween(10, gy, W-10, gy);
+
+    // Michael's Office (top-left)
+    var MO = { x:10, y:10, w:200, h:150 };
+    g.lineStyle(2, 0x1B4F8A, 0.8); g.strokeRect(MO.x, MO.y, MO.w, MO.h);
+    g.fillStyle(0x1B4F8A, 0.04); g.fillRect(MO.x, MO.y, MO.w, MO.h);
+    // Glass door indicator
+    g.lineStyle(2, 0x1B4F8A, 0.3); g.lineBetween(MO.x+MO.w-40, MO.y+MO.h, MO.x+MO.w, MO.y+MO.h);
+    this.add.text(MO.x+10, MO.y+8, "MICHAEL'S OFFICE", { fontSize:'8px', color:'#1B4F8A', fontFamily:'JetBrains Mono', fontStyle:'bold' });
+
+    // Conference Room (top-right)
+    var CR = { x:W-210, y:10, w:200, h:130 };
+    g.lineStyle(2, 0x4A7C3F, 0.8); g.strokeRect(CR.x, CR.y, CR.w, CR.h);
+    g.fillStyle(0x4A7C3F, 0.03); g.fillRect(CR.x, CR.y, CR.w, CR.h);
+    this.add.text(CR.x+10, CR.y+8, "CONFERENCE ROOM", { fontSize:'8px', color:'#4A7C3F', fontFamily:'JetBrains Mono', fontStyle:'bold' });
+    // Conference table
+    g.fillStyle(0x1e2d4a, 1); g.fillRect(CR.x+50, CR.y+40, 100, 50);
+    g.lineStyle(1, 0x2a4a80, 0.6); g.strokeRect(CR.x+50, CR.y+40, 100, 50);
+
+    // Reception (top-center)
+    var REC = { x:220, y:10, w:W-440, h:90 };
+    g.lineStyle(1, 0x2a4a80, 0.4); g.strokeRect(REC.x, REC.y, REC.w, REC.h);
+    g.fillStyle(0x1a2035, 0.5); g.fillRect(REC.x, REC.y, REC.w, REC.h);
+    this.add.text(REC.x+10, REC.y+8, "RECEPTION", { fontSize:'8px', color:'#505870', fontFamily:'JetBrains Mono' });
+    // Reception desk
+    g.fillStyle(0x1e2d4a, 1); g.fillRect(REC.x+20, REC.y+35, 80, 30);
+    g.lineStyle(1, 0x1B4F8A, 0.4); g.strokeRect(REC.x+20, REC.y+35, 80, 30);
+
+    // Break room (bottom-right)
+    var BR = { x:W-170, y:H-120, w:160, h:110 };
+    g.lineStyle(1, 0x8B6914, 0.4); g.strokeRect(BR.x, BR.y, BR.w, BR.h);
+    g.fillStyle(0x8B6914, 0.03); g.fillRect(BR.x, BR.y, BR.w, BR.h);
+    this.add.text(BR.x+10, BR.y+8, "BREAK ROOM", { fontSize:'7px', color:'#8B6914', fontFamily:'JetBrains Mono' });
+
+    // Bullpen desks
+    this.desks = [
+      { id:'d1', x:250, y:180 }, { id:'d2', x:350, y:180 },
+      { id:'d3', x:450, y:180 }, { id:'d4', x:550, y:180 },
+      { id:'d5', x:250, y:270 }, { id:'d6', x:350, y:270 },
+      { id:'d7', x:450, y:270 }, { id:'d8', x:550, y:270 },
+      { id:'michael', x:MO.x+100, y:MO.y+85, isMichael:true },
+    ];
+
+    var dg = this.add.graphics();
+    this.desks.forEach(function(d) {
+      dg.fillStyle(0x1a2035, 1); dg.fillRect(d.x-24, d.y-14, 48, 28);
+      dg.lineStyle(1, 0x1f3460, 0.8); dg.strokeRect(d.x-24, d.y-14, 48, 28);
+      // Monitor
+      dg.fillStyle(0x0d1117, 1); dg.fillRect(d.x-9, d.y-22, 18, 14);
+      dg.lineStyle(1, 0x1B4F8A, 0.5); dg.strokeRect(d.x-9, d.y-22, 18, 14);
+      // Screen glow (tiny pixel)
+      dg.fillStyle(0x1B4F8A, 0.3); dg.fillRect(d.x-6, d.y-19, 12, 8);
+    });
+
+    // Desk labels
+    var deskLabels = {d1:'Dwight',d2:'Jim',d3:'Pam',d4:'Ryan',d5:'Oscar',d6:'Stanley',d7:'Kevin',d8:'Kelly'};
+    this.desks.forEach(function(d) {
+      var name = deskLabels[d.id];
+      if (name) {
+        this.add.text(d.x, d.y+20, name, { fontSize:'7px', color:'#505870', fontFamily:'JetBrains Mono' }).setOrigin(0.5);
+      }
+    }.bind(this));
+
+    this.charGraphics = this.add.graphics();
+
+    // Dunder Mifflin sign on the wall
+    this.add.text(W/2, H-18, 'DUNDER MIFFLIN PAPER COMPANY, INC.', {
+      fontSize:'9px', color:'#1B4F8A', fontFamily:'IBM Plex Sans', fontStyle:'bold', letterSpacing:2
+    }).setOrigin(0.5).setAlpha(0.3);
+
+    this.time.addEvent({ delay:100, callback:this.tickCharacters, callbackScope:this, loop:true });
+  }
+
+  handleAgentsUpdate(sessions) {
+    var activeIds = {};
+    var self = this;
+    sessions.forEach(function(s) {
+      var label = agentLabel(s);
+      var charName = self.getCharName(label.name);
+      var agentId = s.sessionId || String(s.pid);
+      activeIds[agentId] = true;
+      if (!self.agents[agentId]) {
+        var desk = self.claimDesk(agentId, charName);
+        self.agents[agentId] = {
+          id:agentId, name:charName, agentName:label.name, desk:desk,
+          x: desk ? desk.x : Phaser.Math.Between(220,500),
+          y: desk ? desk.y+30 : Phaser.Math.Between(180,300),
+          targetX: desk ? desk.x : 300, targetY: desk ? desk.y+30 : 200,
+          state:'active', color:self.getCharColor(charName),
+          moveTimer:0, animFrame:0, zzzActive:false, zzzTween:null
+        };
+        self.createCharLabel(agentId);
+      } else {
+        self.agents[agentId].state = 'active';
+      }
+    });
+    Object.keys(self.agents).forEach(function(id) {
+      if (!activeIds[id]) self.agents[id].state = 'sleeping';
+    });
+  }
+
+  claimDesk(agentId, charName) {
+    var priority = {'Tyrone':'michael','Dwight':'d1','Jim':'d2','Pam':'d3','Ryan':'d4','Oscar':'d5','Stanley':'d6','Kevin':'d7','Kelly':'d8'};
+    var prefId = priority[charName];
+    var desk = this.desks.find(function(d){return prefId ? d.id===prefId : !d.occupant;});
+    if (desk && !desk.occupant) { desk.occupant = agentId; return desk; }
+    var free = this.desks.find(function(d){return !d.occupant && d.id!=='michael';});
+    if (free) { free.occupant = agentId; return free; }
+    return this.desks[0];
+  }
+
+  getCharName(agentName) { return CHAR_MAP[agentName] || agentName; }
+
+  getCharColor(charName) {
+    var colors = {'Tyrone':0x1B4F8A,'Dwight':0x8B6914,'Jim':0x4A7C3F,'Pam':0xC75B7A,'Ryan':0x6B4C9A,'Oscar':0x2E7D9E,'Kelly':0xD4567A,'Kevin':0x7A5C3A,'Stanley':0x4A4A6A,'Michael':0x1B4F8A};
+    return colors[charName] || 0x6c63ff;
+  }
+
+  createCharLabel(agentId) {
+    var agent = this.agents[agentId];
+    if (!agent) return;
+    var lbl = this.add.text(agent.x, agent.y-22, agent.name, {
+      fontSize:'9px', color:'#e0e4f0', fontFamily:'IBM Plex Sans',
+      backgroundColor:'rgba(13,17,23,0.85)', padding:{x:4,y:2}
+    }).setOrigin(0.5, 1);
+    this.labelTexts[agentId] = lbl;
+  }
+
+  tickCharacters() {
+    var g = this.charGraphics;
+    g.clear();
+    var self = this;
+
+    Object.values(this.agents).forEach(function(agent) {
+      // Active: wander near desk
+      if (agent.state === 'active') {
+        agent.moveTimer--;
+        if (agent.moveTimer <= 0) {
+          var base = agent.desk || {x:300,y:200};
+          agent.targetX = base.x + Phaser.Math.Between(-35,35);
+          agent.targetY = base.y + Phaser.Math.Between(-15,30);
+          agent.moveTimer = Phaser.Math.Between(15,50);
+        }
+        var dx = agent.targetX - agent.x, dy = agent.targetY - agent.y;
+        var dist = Math.sqrt(dx*dx+dy*dy);
+        if (dist > 2) { agent.x += (dx/dist)*1.2; agent.y += (dy/dist)*1.2; }
+      }
+
+      // Draw character circle
+      var r = 10;
+      var alpha = agent.state === 'sleeping' ? 0.3 : 1;
+      g.fillStyle(agent.color, alpha);
+      g.fillCircle(agent.x, agent.y, r);
+      // Glow ring
+      g.lineStyle(2, agent.color, agent.state === 'sleeping' ? 0.08 : 0.2);
+      g.strokeCircle(agent.x, agent.y, r+2);
+      // White outline
+      g.lineStyle(1, 0xffffff, agent.state === 'sleeping' ? 0.05 : 0.15);
+      g.strokeCircle(agent.x, agent.y, r);
+
+      // Typing dots when active
+      if (agent.state === 'active') {
+        agent.animFrame = (agent.animFrame+1) % 30;
+        var dotY = agent.y - r - 8;
+        g.fillStyle(0x63b3ed, 0.9);
+        if (agent.animFrame < 10) g.fillCircle(agent.x-5, dotY, 1.5);
+        else if (agent.animFrame < 20) g.fillCircle(agent.x, dotY, 1.5);
+        else g.fillCircle(agent.x+5, dotY, 1.5);
+      }
+
+      // Update label
+      var lbl = self.labelTexts[agent.id];
+      if (lbl) {
+        lbl.setPosition(agent.x, agent.y - r - 6);
+        lbl.setAlpha(agent.state === 'sleeping' ? 0.3 : 1);
+      }
+
+      // ZZZ for sleeping
+      if (agent.state === 'sleeping' && !agent.zzzActive) {
+        agent.zzzActive = true;
+        var zText = self.add.text(agent.x+10, agent.y-14, 'z z z', {
+          fontSize:'8px', color:'#4a4a6a', fontFamily:'JetBrains Mono'
+        });
+        self.tweens.add({
+          targets: zText, y: zText.y-18, alpha:{from:0.6,to:0},
+          duration:2500, repeat:-1,
+          onRepeat: function(){ zText.setPosition(agent.x+10, agent.y-14); zText.setAlpha(0.6); }
+        });
+        agent.zzzTween = zText;
+      }
+      if (agent.state !== 'sleeping' && agent.zzzActive) {
+        agent.zzzActive = false;
+        if (agent.zzzTween) { agent.zzzTween.destroy(); agent.zzzTween = null; }
+      }
+    });
+  }
+
+  update() {}
+}
+
+// ============ PHASER GAME INIT ============
+var officeGame = null;
+function initOfficeRoom() {
+  if (officeGame) return;
+  var container = document.getElementById('office-room-container');
+  if (!container) return;
+  var w = container.offsetWidth || 800, h = container.offsetHeight || 420;
+  officeGame = new Phaser.Game({
+    type: Phaser.AUTO, width:w, height:h, backgroundColor:'#0d1117',
+    parent:'office-room-container', pixelArt:true, roundPixels:true,
+    scene:[OfficeScene],
+    scale:{ mode:Phaser.Scale.FIT, autoCenter:Phaser.Scale.CENTER_BOTH },
+    render:{ antialias:false, pixelArt:true },
+    banner:false
+  });
+}
+
 // ============ INIT ============
 async function init(){
   for(var i=0;i<5;i++){try{var r=await fetch('/api/usage');if(r.ok)break;}catch{}await new Promise(function(r){setTimeout(r,300);});}
   renderProjects();fetchUsage();fetchAgents();fetchLeads();fetchWorkSessions();fetchUsageHistory();fetchResearchConfig();fetchSchedulerStatus();
   setInterval(fetchUsage,15000);setInterval(fetchAgents,5000);setInterval(fetchLeads,60000);setInterval(fetchWorkSessions,120000);setInterval(fetchUsageHistory,300000);setInterval(fetchSchedulerStatus,30000);
+  initOfficeRoom();
 }
 init();
 </script>

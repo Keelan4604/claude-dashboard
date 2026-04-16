@@ -3,8 +3,10 @@
 <head>
 <meta charset="UTF-8">
 <title>Tyrone Command Center</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%236c63ff'/%3E%3Cstop offset='1' stop-color='%23a855f7'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='64' height='64' rx='14' fill='url(%23g)'/%3E%3Cpath d='M16 20h32M32 20v28' stroke='white' stroke-width='6' stroke-linecap='round'/%3E%3Ccircle cx='32' cy='52' r='3' fill='white'/%3E%3C/svg%3E">
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4/dist/chart.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@3/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom@2/dist/chartjs-plugin-zoom.umd.min.js"></script>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
 
@@ -206,6 +208,10 @@
   .usage-row { display: grid; grid-template-columns: 1fr 1fr 1.5fr; gap: 16px; margin-bottom: 20px; }
   .usage-cards { display: grid; grid-template-columns: 1fr; gap: 16px; }
   .usage-chart-card { display: flex; flex-direction: column; }
+  .chart-range-btns { display: flex; gap: 4px; }
+  .range-btn { background: var(--card); border: 1px solid var(--border); color: var(--muted); font-family: 'JetBrains Mono', monospace; font-size: 10px; font-weight: 600; padding: 3px 8px; border-radius: 6px; cursor: pointer; transition: all .15s; }
+  .range-btn:hover { color: var(--text); border-color: var(--accent); }
+  .range-btn.active { background: var(--accent); color: #fff; border-color: var(--accent); }
   @media (max-width: 900px) { .usage-row { grid-template-columns: 1fr 1fr; } .usage-chart-card { grid-column: 1 / -1; } }
   .usage-big {
     font-size: 32px; font-weight: 700;
@@ -456,11 +462,12 @@
   }
 
   /* ============ RESEARCH TOGGLES ============ */
-  .research-grid { display: flex; flex-direction: column; gap: 10px; }
+  .research-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  @media (max-width: 700px) { .research-grid { grid-template-columns: 1fr; } }
   .research-item {
-    display: flex; align-items: center; gap: 14px;
-    padding: 12px 16px; background: var(--bg);
-    border: 1px solid var(--border); border-radius: 10px;
+    display: flex; align-items: center; gap: 10px;
+    padding: 10px 12px; background: var(--bg);
+    border: 1px solid var(--border); border-radius: 8px;
     transition: all .25s;
   }
   .research-item:hover { border-color: var(--border-hover); }
@@ -515,7 +522,7 @@
       <div class="palette-dot" style="background:#63b3ed" onclick="setAccent('sky','#63b3ed')" title="Sky"></div>
     </div>
     <button class="theme-toggle" onclick="toggleTheme()"><span id="themeIcon">&#9789;</span></button>
-    <span style="font-size:10px;font-weight:600;color:var(--accent);font-family:'JetBrains Mono',monospace;letter-spacing:1px;margin-left:8px;padding:3px 8px;border:1px solid var(--border);border-radius:6px;background:var(--accent-dim)">v2</span>
+    <span style="font-size:10px;font-weight:600;color:var(--accent);font-family:'JetBrains Mono',monospace;letter-spacing:1px;margin-left:8px;padding:3px 8px;border:1px solid var(--border);border-radius:6px;background:var(--accent-dim)">v3</span>
   </div>
 </div>
 
@@ -555,13 +562,22 @@
       </div>
     </div>
     <div class="card anim usage-chart-card" style="animation-delay:.25s">
-      <div class="card-label">Usage Over Time</div>
-      <div style="position:relative;flex:1;min-height:200px"><canvas id="usageChart"></canvas></div>
-      <div style="margin-top:8px;font-size:11px;font-family:'JetBrains Mono',monospace;color:var(--muted)"><span id="usageUpdated2">-</span></div>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+        <div class="card-label" style="margin-bottom:0">Usage Over Time</div>
+        <div class="chart-range-btns" id="chartRangeBtns">
+          <button class="range-btn" data-range="6h">6H</button>
+          <button class="range-btn" data-range="24h">24H</button>
+          <button class="range-btn active" data-range="2d">2D</button>
+          <button class="range-btn" data-range="1w">1W</button>
+          <button class="range-btn" data-range="all">ALL</button>
+        </div>
+      </div>
+      <div style="position:relative;flex:1;min-height:300px"><canvas id="usageChart"></canvas></div>
+      <div style="margin-top:8px;font-size:11px;font-family:'JetBrains Mono',monospace;color:var(--muted)"><span id="usageUpdated2">-</span> · drag to pan, scroll to zoom</div>
     </div>
   </div>
   <div><div class="section-head">Active Agents</div><div id="agentList"></div><div class="optimizer-badge" id="optimizerBadge"></div></div>
-  <div style="margin-top:24px"><div class="section-head">Nightly Research Targets</div><div class="card anim" style="animation-delay:.3s;padding:20px" id="researchPanel"><div style="color:var(--muted);font-size:12px">Loading config...</div></div></div>
+  <div style="margin-top:24px"><div class="section-head">Nightly Research Targets</div><div class="card anim" style="animation-delay:.3s;padding:20px" id="researchPanel"><div style="color:var(--muted);font-size:12px">Loading config...</div></div><div class="card anim" style="animation-delay:.35s;padding:14px 20px;margin-top:10px" id="schedulerStatus"><div style="color:var(--muted);font-size:11px">Loading scheduler status...</div></div></div>
   <div style="margin-top:24px"><div class="section-head">All Project Lanes</div><div class="project-list" id="projectList"></div></div>
   <div class="panel-footer"><span><span class="timestamp" id="usageUpdated">-</span><span class="seconds-ago" id="usageAgo"></span></span><span>Refreshes every 15s</span></div>
 </div>
@@ -698,23 +714,61 @@ async function fetchUsage() {
 
 // ============ USAGE HISTORY CHART ============
 var usageChart = null;
+var usageHistoryFull = [];
+var currentRange = '2d';
+
+var RANGE_MS = {
+  '6h': 6 * 3600000,
+  '24h': 24 * 3600000,
+  '2d': 2 * 86400000,
+  '1w': 7 * 86400000,
+  'all': null
+};
+
+// Wire up range buttons
+document.addEventListener('DOMContentLoaded', function() {
+  document.getElementById('chartRangeBtns').addEventListener('click', function(e) {
+    var btn = e.target.closest('.range-btn');
+    if (!btn) return;
+    document.querySelectorAll('.range-btn').forEach(function(b) { b.classList.remove('active'); });
+    btn.classList.add('active');
+    currentRange = btn.dataset.range;
+    if (usageHistoryFull.length) renderUsageChart(usageHistoryFull);
+  });
+});
 
 async function fetchUsageHistory() {
   try {
     var hist = await smartFetch('/api/usage-history', null);
     if (!hist || !hist.length) return;
+    usageHistoryFull = hist;
     renderUsageChart(hist);
   } catch {}
+}
+
+function filterByRange(hist, range) {
+  if (!RANGE_MS[range]) return hist;
+  var cutoff = Date.now() - RANGE_MS[range];
+  return hist.filter(function(h) { return new Date(h.t).getTime() >= cutoff; });
 }
 
 function renderUsageChart(hist) {
   var ctx = document.getElementById('usageChart');
   if (!ctx) return;
 
-  var labels = hist.map(function(h) { return new Date(h.t); });
-  var sessionData = hist.map(function(h) { return h.session; });
-  var weeklyData = hist.map(function(h) { return h.weekly; });
-  var sonnetData = hist.map(function(h) { return h.sonnet; });
+  var filtered = filterByRange(hist, currentRange);
+  if (!filtered.length) filtered = hist.slice(-10);
+
+  var labels = filtered.map(function(h) { return new Date(h.t); });
+  var sessionData = filtered.map(function(h) { return h.session; });
+  var weeklyData = filtered.map(function(h) { return h.weekly; });
+  var sonnetData = filtered.map(function(h) { return h.sonnet; });
+
+  // Pick time axis unit based on range
+  var timeUnit = 'hour';
+  var ticksLimit = 10;
+  if (currentRange === '1w' || currentRange === 'all') { timeUnit = 'day'; ticksLimit = 8; }
+  if (currentRange === '6h') { ticksLimit = 7; }
 
   var isDark = document.documentElement.getAttribute('data-theme') === 'dark';
   var gridColor = isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)';
@@ -741,8 +795,8 @@ function renderUsageChart(hist) {
         {
           label: 'Weekly %',
           data: weeklyData,
-          borderColor: '#818cf8',
-          backgroundColor: 'rgba(129,140,248,0.05)',
+          borderColor: '#4fd1c5',
+          backgroundColor: 'rgba(79,209,197,0.05)',
           borderWidth: 2,
           pointRadius: 0,
           pointHitRadius: 8,
@@ -785,13 +839,21 @@ function renderUsageChart(hist) {
             title: function(items) { return new Date(items[0].parsed.x).toLocaleString(); },
             label: function(item) { return ' ' + item.dataset.label + ': ' + item.parsed.y + '%'; }
           }
+        },
+        zoom: {
+          pan: { enabled: true, mode: 'x', modifierKey: null },
+          zoom: {
+            wheel: { enabled: true },
+            pinch: { enabled: true },
+            mode: 'x'
+          }
         }
       },
       scales: {
         x: {
           type: 'time',
-          time: { unit: 'hour', displayFormats: { hour: 'ha', day: 'MMM d' } },
-          ticks: { color: tickColor, font: { family: "'JetBrains Mono',monospace", size: 10 }, maxTicksLimit: 10 },
+          time: { unit: timeUnit, displayFormats: { hour: 'ha', day: 'MMM d' } },
+          ticks: { color: tickColor, font: { family: "'JetBrains Mono',monospace", size: 10 }, maxTicksLimit: ticksLimit },
           grid: { color: gridColor }
         },
         y: {
@@ -1049,6 +1111,8 @@ async function fetchResearchConfig() {
   } catch {}
 }
 
+function fmtHM(h, m) { return String(h).padStart(2,'0') + ':' + String(m||0).padStart(2,'0'); }
+
 function renderResearchPanel() {
   if (!researchConfig) return;
   var el = document.getElementById('researchPanel');
@@ -1056,9 +1120,22 @@ function renderResearchPanel() {
   var keys = Object.keys(researchConfig.areas);
   for (var i = 0; i < keys.length; i++) {
     var k = keys[i], a = researchConfig.areas[k];
-    html += '<div class="research-item' + (a.enabled ? ' enabled' : '') + '">';
+    html += '<div class="research-item' + (a.enabled ? ' enabled' : '') + '" style="flex-direction:column;align-items:stretch">';
+    html += '<div style="display:flex;align-items:center;gap:10px">';
     html += '<button class="research-toggle-sw' + (a.enabled ? ' on' : '') + '" onclick="toggleResearch(\'' + k + '\')" title="Toggle ' + a.label + '"></button>';
-    html += '<div class="research-label"><div class="research-label-name">' + a.label + '</div><div class="research-label-desc">' + a.description + '</div></div>';
+    html += '<div class="research-label"><div class="research-label-name">' + a.label + '</div><div class="research-label-desc">' + (a.description||'') + '</div></div>';
+    html += '</div>';
+    // schedule chips
+    var sched = a.schedule || [];
+    html += '<div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;padding-left:46px">';
+    for (var j = 0; j < sched.length; j++) {
+      var s = sched[j];
+      html += '<span style="display:inline-flex;align-items:center;gap:4px;padding:3px 8px;border:1px solid var(--border);border-radius:12px;background:var(--accent-dim);font-family:\'JetBrains Mono\',monospace;font-size:11px">'
+        + fmtHM(s.hour, s.minute)
+        + ' <button onclick="removeSchedule(\'' + k + '\',' + j + ')" style="background:none;border:none;color:var(--muted);cursor:pointer;padding:0;font-size:14px;line-height:1">×</button></span>';
+    }
+    html += '<button onclick="addSchedule(\'' + k + '\')" style="padding:3px 10px;border:1px dashed var(--border);border-radius:12px;background:transparent;color:var(--accent);font-size:11px;cursor:pointer;font-family:\'JetBrains Mono\',monospace">+ time</button>';
+    html += '</div>';
     html += '</div>';
   }
   html += '</div>';
@@ -1076,6 +1153,46 @@ function toggleResearch(key) {
   if (!researchConfig || !researchConfig.areas[key]) return;
   researchConfig.areas[key].enabled = !researchConfig.areas[key].enabled;
   saveResearchConfig();
+}
+
+function addSchedule(key) {
+  if (!researchConfig || !researchConfig.areas[key]) return;
+  var input = prompt('Schedule time (24h HH:MM, e.g. 15:30)', '06:00');
+  if (!input) return;
+  var m = input.match(/^(\d{1,2}):(\d{2})$/);
+  if (!m) { alert('Bad format. Use HH:MM.'); return; }
+  var h = parseInt(m[1], 10), mn = parseInt(m[2], 10);
+  if (h < 0 || h > 23 || mn < 0 || mn > 59) { alert('Out of range.'); return; }
+  if (!Array.isArray(researchConfig.areas[key].schedule)) researchConfig.areas[key].schedule = [];
+  researchConfig.areas[key].schedule.push({ hour: h, minute: mn });
+  saveResearchConfig();
+}
+
+function removeSchedule(key, idx) {
+  if (!researchConfig || !researchConfig.areas[key]) return;
+  if (!Array.isArray(researchConfig.areas[key].schedule)) return;
+  researchConfig.areas[key].schedule.splice(idx, 1);
+  saveResearchConfig();
+}
+
+async function fetchSchedulerStatus() {
+  try {
+    var d = await smartFetch('/api/scheduler-status', null);
+    if (!d || !d.areas) return;
+    var el = document.getElementById('schedulerStatus');
+    if (!el) return;
+    var html = '';
+    var keys = Object.keys(d.areas);
+    for (var i = 0; i < keys.length; i++) {
+      var k = keys[i], a = d.areas[k];
+      if (!a.enabled) continue;
+      var next = a.nextFireAt ? new Date(a.nextFireAt).toLocaleString() : '—';
+      var last = a.lastFiredAt ? new Date(a.lastFiredAt).toLocaleString() : 'never';
+      var ok = a.lastFiredOk === false ? ' ⚠' : (a.lastFiredOk === true ? ' ✓' : '');
+      html += '<div style="font-size:11px;font-family:\'JetBrains Mono\',monospace;margin:2px 0"><b>' + k + '</b> — next: ' + next + ' · last: ' + last + ok + '</div>';
+    }
+    el.innerHTML = html || '<div style="color:var(--muted);font-size:11px">No enabled research areas scheduled</div>';
+  } catch {}
 }
 
 function toggleResearchEmail() {
@@ -1106,8 +1223,8 @@ async function saveResearchConfig() {
 // ============ INIT ============
 async function init(){
   for(var i=0;i<5;i++){try{var r=await fetch('/api/usage');if(r.ok)break;}catch{}await new Promise(function(r){setTimeout(r,300);});}
-  renderProjects();fetchUsage();fetchAgents();fetchLeads();fetchWorkSessions();fetchUsageHistory();fetchResearchConfig();
-  setInterval(fetchUsage,15000);setInterval(fetchAgents,5000);setInterval(fetchLeads,60000);setInterval(fetchWorkSessions,120000);setInterval(fetchUsageHistory,300000);
+  renderProjects();fetchUsage();fetchAgents();fetchLeads();fetchWorkSessions();fetchUsageHistory();fetchResearchConfig();fetchSchedulerStatus();
+  setInterval(fetchUsage,15000);setInterval(fetchAgents,5000);setInterval(fetchLeads,60000);setInterval(fetchWorkSessions,120000);setInterval(fetchUsageHistory,300000);setInterval(fetchSchedulerStatus,30000);
 }
 init();
 </script>

@@ -56,6 +56,8 @@
     --char-michael: #1B4F8A;
     --char-angela: #8A6B4A;
     --char-toby: #5A7A4A;
+    --char-phyllis: #B47AB0;
+    --char-andy: #D88A2D;
   }
 
   [data-theme="dark"] {
@@ -647,11 +649,17 @@
   .drawer-row { display:flex; flex-direction:row; gap:4px; }
   .drawer-item {
     flex:1; background:var(--surface); border:1px solid var(--border); border-radius:10px;
-    overflow:hidden; transition:border-color .2s, background .15s; cursor:pointer;
-    user-select:none; min-width:0;
+    overflow:hidden; transition:border-color .2s, background .15s, box-shadow .2s; cursor:pointer;
+    user-select:none; min-width:0; position:relative;
   }
   .drawer-item:hover { border-color:var(--border-hover); background:var(--surface2); }
   .drawer-item.open { border-color:var(--accent); background:var(--surface2); }
+  .drawer-item.is-active {
+    border-color:#68d391;
+    box-shadow:0 0 0 1px rgba(104,211,145,.5), 0 0 14px rgba(104,211,145,.35);
+    background:linear-gradient(180deg, rgba(104,211,145,.08), var(--surface));
+  }
+  .drawer-item.is-active .drawer-agent-name { color:#68d391 !important; }
   .drawer-header {
     display:flex; flex-direction:row; align-items:center; justify-content:center;
     gap:4px; padding:6px 6px 5px;
@@ -664,9 +672,9 @@
   .drawer-agent-name { font-size:11px; font-weight:600; font-family:'IBM Plex Sans',sans-serif; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
   .drawer-agent-info { display:flex; flex-direction:column; min-width:0; gap:0; }
   .drawer-agent-role { font-size:8px; font-family:'IBM Plex Sans',sans-serif; color:var(--muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; line-height:1.1; margin-top:-1px; }
-  .drawer-status { width:6px; height:6px; border-radius:50%; flex-shrink:0; }
-  .drawer-status.active { background:#68d391; box-shadow:0 0 6px rgba(104,211,145,.6); animation:pulse 2s ease-in-out infinite; }
-  .drawer-status.sleeping { background:var(--muted); opacity:.5; }
+  .drawer-status { width:10px; height:10px; border-radius:50%; flex-shrink:0; }
+  .drawer-status.active { background:#68d391; box-shadow:0 0 10px rgba(104,211,145,.9), 0 0 0 2px rgba(104,211,145,.25); animation:pulse 1.5s ease-in-out infinite; }
+  .drawer-status.sleeping { background:var(--muted); opacity:.4; }
   .drawer-chevron { display:none; }
 
   .drawer-panel {
@@ -819,6 +827,57 @@
   .calling-stat.green .num { color: var(--green); }
   .calling-stat.orange .num { color: var(--orange); }
   .calling-stat.blue .num { color: var(--blue); }
+
+  /* Andy auto-dialer call rows */
+  .andy-call-row {
+    display: grid; grid-template-columns: 90px 1fr 110px 90px 70px auto;
+    gap: 10px; align-items: center;
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 8px; padding: 8px 12px; font-size: 12px;
+    transition: all .2s;
+  }
+  .andy-call-row:hover { border-color: var(--char-andy); }
+  .andy-call-campaign { font-size: 10px; text-transform: uppercase; letter-spacing: .4px; color: var(--char-andy); font-weight: 600; }
+  .andy-call-target { font-family: 'JetBrains Mono', monospace; color: var(--text); }
+  .andy-call-time { color: var(--muted); font-size: 10px; }
+  .andy-call-dur { color: var(--dim); text-align: right; font-family: 'JetBrains Mono', monospace; }
+  .andy-call-outcome {
+    text-align: center; padding: 2px 8px; border-radius: 6px; font-size: 10px;
+    text-transform: uppercase; letter-spacing: .4px; font-weight: 600;
+  }
+  .andy-call-outcome.ended { background: var(--green-dim); color: var(--green); }
+  .andy-call-outcome.failed, .andy-call-outcome.error { background: var(--coral-dim); color: var(--coral); }
+  .andy-call-outcome.unknown, .andy-call-outcome.skipped_business_hours { background: var(--surface); color: var(--muted); }
+  .andy-call-actions { display: flex; gap: 6px; }
+  .andy-call-btn {
+    padding: 4px 10px; font-size: 10px; border-radius: 6px; cursor: pointer;
+    background: var(--surface); border: 1px solid var(--border); color: var(--text);
+    text-decoration: none; transition: all .2s; font-weight: 500;
+  }
+  .andy-call-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+  /* Transcript modal */
+  .transcript-modal-bg {
+    position: fixed; inset: 0; background: rgba(0,0,0,0.55);
+    z-index: 9999; display: flex; align-items: center; justify-content: center;
+  }
+  .transcript-modal {
+    background: var(--bg); border: 1px solid var(--border); border-radius: 12px;
+    padding: 22px; max-width: 720px; width: 92%; max-height: 80vh;
+    display: flex; flex-direction: column; box-shadow: 0 8px 40px rgba(0,0,0,0.5);
+  }
+  .transcript-modal h3 { margin: 0 0 8px; color: var(--text); font-size: 16px; }
+  .transcript-modal .meta { color: var(--muted); font-size: 11px; margin-bottom: 14px; font-family: 'JetBrains Mono', monospace; }
+  .transcript-body {
+    overflow-y: auto; flex: 1; background: var(--surface); border: 1px solid var(--border);
+    border-radius: 8px; padding: 14px; font-family: 'JetBrains Mono', monospace;
+    font-size: 12px; white-space: pre-wrap; color: var(--text); line-height: 1.55;
+  }
+  .transcript-modal .close-row { display: flex; justify-content: flex-end; margin-top: 12px; gap: 8px; }
+  .transcript-modal .close-btn {
+    padding: 8px 18px; background: var(--accent); border: none; border-radius: 8px;
+    color: white; cursor: pointer; font-weight: 600;
+  }
 
   .filter-bar { display: flex; gap: 6px; margin-bottom: 16px; flex-wrap: wrap; }
   .filter-btn {
@@ -1353,8 +1412,8 @@
   <div class="tab-bar">
     <div class="tab active" data-tab="usage" title="Home dashboard (key: 1)" tabindex="0" role="tab">Home</div>
     <div class="tab" data-tab="operations" title="Operations panel (key: 2)" tabindex="0" role="tab">Operations</div>
-    <div class="tab" data-tab="calling" title="Cold calling leads (key: 3)" tabindex="0" role="tab">Cold Calling <span class="badge" id="callCount">0</span></div>
-    <div class="tab" data-tab="sessions" title="Work sessions (key: 4)" tabindex="0" role="tab">Work Sessions</div>
+    <div class="tab" data-tab="creed" title="Creed - PC Health (key: 6)" tabindex="0" role="tab" style="display:flex;align-items:center;gap:6px">Creed <span class="badge" id="creedScoreBadge" style="background:var(--accent-dim);color:var(--accent)">--</span></div>
+    <div class="tab" data-tab="stanley" title="Stanley - trading bot (schwab portfolio)" tabindex="0" role="tab">Stanley <span class="badge" id="stanleyUrgentBadge" style="background:var(--accent-dim);color:var(--accent)">0</span></div>
   </div>
   <div class="usage-compact-center">
     <div class="usage-compact" id="usageCompact">
@@ -1364,13 +1423,6 @@
       <span class="usage-compact-sep">·</span>
       <span class="usage-compact-item"><span class="usage-compact-label">Reset</span><span class="usage-compact-value" id="sessionResetBar" style="font-size:11px">-</span></span>
     </div>
-  </div>
-  <div class="pnl-compact" id="pnlCounter">
-    <span class="pnl-item"><span class="pnl-label">Spent</span><span class="pnl-value pnl-spent" id="pnlSpent">$0</span></span>
-    <span class="pnl-sep">|</span>
-    <span class="pnl-item"><span class="pnl-label">Made</span><span class="pnl-value pnl-made" id="pnlMade">$0</span></span>
-    <span class="pnl-sep">|</span>
-    <span class="pnl-item"><span class="pnl-label">Net</span><span class="pnl-value pnl-net-zero" id="pnlNet">$0</span></span>
   </div>
   <div class="controls">
     <div class="palette-bar" id="paletteBar">
@@ -1395,8 +1447,6 @@
         <div class="shortcut-row"><span>Command palette</span><span class="shortcut-key">Ctrl+K</span></div>
         <div class="shortcut-row"><span>Switch to Home</span><span class="shortcut-key">1 / Ctrl+1</span></div>
         <div class="shortcut-row"><span>Switch to Operations</span><span class="shortcut-key">2 / Ctrl+2</span></div>
-        <div class="shortcut-row"><span>Switch to Cold Calling</span><span class="shortcut-key">3 / Ctrl+3</span></div>
-        <div class="shortcut-row"><span>Switch to Work Sessions</span><span class="shortcut-key">4 / Ctrl+4</span></div>
         <div class="shortcut-row"><span>Focus office chat</span><span class="shortcut-key">/ / Ctrl+/</span></div>
         <div class="shortcut-row"><span>Force refresh all</span><span class="shortcut-key">Ctrl+Shift+R</span></div>
         <div class="shortcut-row"><span>Toggle dev mode</span><span class="shortcut-key">D</span></div>
@@ -1474,6 +1524,13 @@
         <div id="agentList"></div>
         <div class="optimizer-badge" id="optimizerBadge"></div>
         <div id="agentSessionStats" style="margin-top:8px;padding-top:8px;border-top:1px solid var(--border);font-size:10px;font-family:'JetBrains Mono',monospace;color:var(--muted);line-height:1.8"></div>
+      </div>
+      <div class="card" style="padding:12px 14px;display:flex;align-items:center;justify-content:space-between;gap:10px">
+        <div>
+          <div style="font-weight:600;font-size:12px">Music Lamp</div>
+          <div id="lampStatusText" style="color:var(--muted);font-size:10px;margin-top:2px;font-family:'JetBrains Mono',monospace">Loading...</div>
+        </div>
+        <button id="lampToggleBtn" onclick="toggleLamp()" style="padding:6px 14px;border-radius:6px;border:1px solid var(--border);background:var(--surface);color:var(--text);cursor:pointer;font-weight:600;font-size:11px">...</button>
       </div>
     </div>
   </div>
@@ -1564,52 +1621,2080 @@
   <div class="panel-footer"><span><span class="timestamp" id="opsUpdated">-</span></span><span>Research refreshes every 30s</span></div>
 </div>
 
-<!-- ============ COLD CALLING ============ -->
-<div class="panel" id="panel-calling">
-  <div class="calling-header"><div class="calling-stats" id="callingStats"></div></div>
-  <div class="filter-bar" id="filterBar">
-    <button class="filter-btn active" data-filter="all">All</button>
-    <button class="filter-btn" data-filter="call">Call Ready</button>
-    <button class="filter-btn" data-filter="demo">Has Demo</button>
-    <button class="filter-btn" data-filter="sent">Email Sent</button>
-    <button class="filter-btn" data-filter="phone">Has Phone</button>
-    <button class="filter-btn" data-filter="noresponse">No Response</button>
-    <button class="filter-btn" data-filter="called">Already Called</button>
-    <button class="filter-btn" data-filter="notcalled">Not Called Yet</button>
+<!-- ============ TYRONE (OFFICE, AGENTS, PROJECTS) ============ -->
+<div class="panel" id="panel-tyrone">
+  <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:12px;gap:14px;flex-wrap:wrap">
+    <div>
+      <div style="font-size:20px;font-weight:700;letter-spacing:.3px">Tyrone Command Center</div>
+      <div style="font-size:11px;color:var(--muted);margin-top:2px">agent roster, active projects, infrastructure, what's next</div>
+    </div>
+    <div style="display:flex;gap:8px;align-items:center">
+      <button onclick="tyroneRefresh()" style="padding:7px 12px;background:var(--surface2);color:var(--text);border:1px solid var(--border);border-radius:6px;cursor:pointer;font-size:11px;font-family:'JetBrains Mono',monospace">Refresh</button>
+    </div>
   </div>
-  <div class="lead-list" id="leadList"></div>
-  <div class="panel-footer"><span><span class="timestamp" id="leadsUpdated">-</span><span class="seconds-ago" id="leadsAgo"></span></span><span>Refreshes every 60s</span></div>
+
+  <div style="display:grid;grid-template-columns:1.2fr 1fr;gap:12px">
+    <!-- LEFT COL: Agent Roster (live) + What To Do Next -->
+    <div style="display:flex;flex-direction:column;gap:12px">
+      <div class="card anim" style="padding:14px">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+          <div style="font-weight:600;font-size:14px">Agent Roster</div>
+          <div style="font-size:10px;color:var(--muted)" id="tyroneRosterMeta">loading...</div>
+        </div>
+        <div id="tyroneRoster" style="display:flex;flex-direction:column;gap:6px;font-size:12px"></div>
+      </div>
+
+      <div class="card anim" style="padding:14px;animation-delay:.05s">
+        <div style="font-weight:600;font-size:14px;margin-bottom:8px">What To Do Next</div>
+        <ol style="margin:0;padding-left:18px;font-size:12px;color:var(--text);line-height:1.7">
+          <li>Send 42+ unsent Gmail drafts (or pivot to phone / FB - mostly superseded by lead-engine)</li>
+          <li>Delete old individual demo Cloudflare Pages projects (manual, 20+ slots to free)</li>
+          <li>EcoPro: set up Resend API key for contact form email delivery</li>
+          <li>Stock trading prototype - paper-trade first (Alpaca MCP V2)</li>
+          <li>Europe trip last-minute logistics (departs May 18)</li>
+          <li>Lock down Ann Arbor housing (UMich MS Aerospace, Fall 2026)</li>
+        </ol>
+      </div>
+
+      <div class="card anim" style="padding:14px;animation-delay:.1s">
+        <div style="font-weight:600;font-size:14px;margin-bottom:8px">Key Dates</div>
+        <div style="display:grid;grid-template-columns:1fr auto;gap:4px 16px;font-size:12px">
+          <div>Europe trip departure</div><div style="color:var(--muted)">May 18, 2026</div>
+          <div>Professor outreach send-by</div><div style="color:var(--muted)">before May 18</div>
+          <div>SMART Scholarship opens</div><div style="color:var(--muted)">Aug 1, 2026</div>
+          <div>SMART Scholarship due</div><div style="color:var(--muted)">Dec 2026 (1st Fri)</div>
+          <div>UMich career fair</div><div style="color:var(--muted)">Fall 2026</div>
+          <div>Weekly Opus reset</div><div style="color:var(--muted)">Wed 11pm</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- RIGHT COL: Active Projects + Infrastructure -->
+    <div style="display:flex;flex-direction:column;gap:12px">
+      <div class="card anim" style="padding:14px;animation-delay:.05s">
+        <div style="font-weight:600;font-size:14px;margin-bottom:10px">Active Projects</div>
+        <div style="display:flex;flex-direction:column;gap:10px;font-size:12px">
+          <div style="border-left:3px solid #6c63ff;padding-left:10px">
+            <div style="font-weight:600">Website Redesign Biz (Tuscaloosa)</div>
+            <div style="color:var(--muted);font-size:11px;margin-top:2px">
+              Tyrone + Phyllis + Andy · two-pitch lead-engine (BAD SITE rebuild / GOOD SITE clone+undercut) · 27 demo sites, 21 deployed ·
+              1 positive reply (Jamaican Spice) · goal $5K-$14K summer
+            </div>
+          </div>
+          <div style="border-left:3px solid #4fd1c5;padding-left:10px">
+            <div style="font-weight:600">EcoPro (dad's company)</div>
+            <div style="color:var(--muted);font-size:11px;margin-top:2px">
+              Jim · ecoprousa.com LIVE (migrated Apr 15) · Cloudflare Workers · top leads: Resolution Copper, Ivanhoe, FCX, GFL ·
+              competitor gap: IoT monitoring (Sy-Klone RESPA Advisor+, BreatheSafe telemetry)
+            </div>
+          </div>
+          <div style="border-left:3px solid #f687b3;padding-left:10px">
+            <div style="font-weight:600">Career / UMich Aerospace MS</div>
+            <div style="color:var(--muted);font-size:11px;margin-top:2px">
+              Accepted UMich, declined TAMU/UF · job hunt sheet active · SMART Scholarship prep done · professor emails drafted
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card anim" style="padding:14px;animation-delay:.1s">
+        <div style="font-weight:600;font-size:14px;margin-bottom:10px">Infrastructure</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;font-size:11px">
+          <a href="https://ha.keelanodoherty.org" target="_blank" style="padding:8px;background:var(--surface2);border:1px solid var(--border);border-radius:6px;color:var(--text);text-decoration:none">Home Assistant</a>
+          <a href="https://dashboard.keelanodoherty.org" target="_blank" style="padding:8px;background:var(--surface2);border:1px solid var(--border);border-radius:6px;color:var(--text);text-decoration:none">Public Dashboard</a>
+          <a href="https://ecoprousa.com" target="_blank" style="padding:8px;background:var(--surface2);border:1px solid var(--border);border-radius:6px;color:var(--text);text-decoration:none">EcoPro (live)</a>
+          <a href="https://ecopro.keelanodoherty.org" target="_blank" style="padding:8px;background:var(--surface2);border:1px solid var(--border);border-radius:6px;color:var(--text);text-decoration:none">EcoPro staging</a>
+          <a href="https://demo.keelanodoherty.org" target="_blank" style="padding:8px;background:var(--surface2);border:1px solid var(--border);border-radius:6px;color:var(--text);text-decoration:none">Demo sites</a>
+          <a href="https://westalabamafence.keelanodoherty.org" target="_blank" style="padding:8px;background:var(--surface2);border:1px solid var(--border);border-radius:6px;color:var(--text);text-decoration:none">WAL Fence (flagship)</a>
+        </div>
+        <div style="margin-top:10px;font-size:10px;color:var(--muted);line-height:1.6">
+          <div><b>Nightly:</b> <code style="font-size:10px">nightly.cmd</code> @ 2AM via Task Scheduler (ClaudeNightly) · all targets OFF as of 2026-04-14</div>
+          <div><b>Scraper:</b> Chrome Profile at <code style="font-size:10px">scraper-chrome-data/</code> · if expired: <code style="font-size:10px">node usage-scraper.js --login</code></div>
+          <div><b>Cloudflare Pages:</b> 21/21 AT LIMIT · must delete before creating new</div>
+          <div><b>Gmail:</b> keelan4604@gmail.com (iCloud is dead for outreach)</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="panel-footer" style="margin-top:12px"><span><span class="timestamp" id="tyroneUpdated">-</span></span><span>source: Memory/tyrone-world.md · auto-refresh 10s</span></div>
 </div>
 
-<!-- ============ WORK SESSIONS ============ -->
-<div class="panel" id="panel-sessions">
-  <div class="section-head">Recent Work & Strategy</div>
-  <div id="workList"></div>
-  <div class="panel-footer"><span><span class="timestamp" id="sessionsUpdated">-</span><span class="seconds-ago" id="sessionsAgo"></span></span><span>Refreshes every 2m</span></div>
+<!-- ============ STANLEY (TRADING BOT) v3 - money-focused, plain-English ============ -->
+<style>
+  /* scoped Stanley styles - green/red/amber + grays only (Tufte) */
+  #panel-stanley { --st-pos:#047857; --st-neg:#B91C1C; --st-warn:#B45309; --st-ink:var(--text); --st-mute:var(--muted); }
+  #panel-stanley .st-card { background:var(--surface2); border:1px solid var(--border); border-radius:12px; padding:14px; }
+  #panel-stanley .st-grid { display:grid; gap:12px; }
+  #panel-stanley .st-h2 { font-size:11px; letter-spacing:.12em; color:var(--muted); text-transform:uppercase; margin-bottom:10px; }
+  #panel-stanley .st-tile-num { font-size:24px; font-weight:700; line-height:1.1; }
+  #panel-stanley .st-tile-sub { font-size:11px; color:var(--muted); margin-top:3px; }
+  #panel-stanley .st-num { font-family:'JetBrains Mono',monospace; text-align:right; }
+  #panel-stanley .st-pill { display:inline-flex; align-items:center; gap:6px; padding:4px 11px; border-radius:999px; font-size:11px; font-weight:700; border:1px solid transparent; letter-spacing:.04em; }
+  #panel-stanley .st-pill.buy { background:rgba(4,120,87,.14); color:var(--st-pos); border-color:rgba(4,120,87,.35); }
+  #panel-stanley .st-pill.sell{ background:rgba(185,28,28,.14); color:var(--st-neg); border-color:rgba(185,28,28,.35); }
+  #panel-stanley .st-pill.hold{ background:rgba(107,114,128,.12); color:var(--muted); border-color:var(--border); }
+  #panel-stanley .st-pill.warn{ background:rgba(180,83,9,.14); color:var(--st-warn); border-color:rgba(180,83,9,.35); }
+  #panel-stanley .st-btn { padding:6px 11px; background:var(--surface); color:var(--text); border:1px solid var(--border); border-radius:6px; cursor:pointer; font-size:11px; font-family:'JetBrains Mono',monospace; transition:background .15s; }
+  #panel-stanley .st-btn:hover { background:var(--surface2); }
+  #panel-stanley .st-btn.primary { background:var(--accent-dim); color:var(--accent); border-color:var(--accent); font-weight:600; }
+  #panel-stanley .st-btn.primary-action { background:var(--accent); color:#fff; border-color:var(--accent); font-weight:700; padding:8px 16px; font-size:12px; }
+  #panel-stanley .st-btn.primary-action:hover { filter:brightness(1.1); }
+  /* action card */
+  #panel-stanley .st-action { background:var(--surface); border:1px solid var(--border); border-radius:10px; padding:14px 16px; transition:border-color .15s; }
+  #panel-stanley .st-action:hover { border-color:var(--border-hover); }
+  #panel-stanley .st-action-top { display:flex; align-items:center; flex-wrap:wrap; gap:14px; }
+  #panel-stanley .st-ticker { font-weight:800; font-size:18px; letter-spacing:.02em; }
+  #panel-stanley .st-qty { font-weight:700; font-size:15px; color:var(--text); }
+  #panel-stanley .st-dollar { font-weight:700; font-size:15px; font-family:'JetBrains Mono',monospace; color:var(--text); }
+  #panel-stanley .st-reason-short { color:var(--muted); font-size:12.5px; flex:1 1 200px; line-height:1.45; min-width:160px; }
+  #panel-stanley .st-action-row { display:flex; gap:8px; flex-wrap:wrap; margin-top:11px; align-items:center; }
+  #panel-stanley .st-why-trigger { display:inline-flex; align-items:center; gap:6px; margin-top:10px; padding:6px 0 0 0; font-size:11.5px; color:var(--accent); cursor:pointer; user-select:none; background:none; border:none; font-family:inherit; }
+  #panel-stanley .st-why-trigger:hover { text-decoration:underline; }
+  #panel-stanley .st-chevron { display:inline-block; transition:transform .2s; }
+  #panel-stanley .st-why-open .st-chevron { transform:rotate(90deg); }
+  #panel-stanley .st-why-body { display:none; margin-top:11px; padding-top:12px; border-top:1px solid var(--border); font-size:12.5px; line-height:1.55; }
+  #panel-stanley .st-why-open .st-why-body { display:block; animation:st-fade .22s ease-out; }
+  @keyframes st-fade { from { opacity:0; transform:translateY(-3px); } to { opacity:1; transform:translateY(0); } }
+  #panel-stanley .st-why-body p { margin:0 0 8px 0; }
+  #panel-stanley .st-why-body ul { margin:6px 0 10px 0; padding-left:0; list-style:none; }
+  #panel-stanley .st-why-body li { padding:3px 0 3px 22px; position:relative; color:var(--text); font-size:12px; }
+  #panel-stanley .st-why-body li::before { content:"\2713"; position:absolute; left:4px; color:var(--st-pos); font-weight:700; }
+  /* badge (LTCG, etc) */
+  #panel-stanley .st-badge { display:inline-flex; align-items:center; gap:5px; padding:3px 9px; border-radius:6px; font-size:11px; font-weight:600; }
+  #panel-stanley .st-badge.ok { background:rgba(4,120,87,.12); color:var(--st-pos); }
+  #panel-stanley .st-badge.warn { background:rgba(180,83,9,.14); color:var(--st-warn); }
+  #panel-stanley .st-badge.bad { background:rgba(185,28,28,.12); color:var(--st-neg); }
+  /* citation chips */
+  #panel-stanley .st-cite { display:inline-block; padding:2px 7px; margin:2px 4px 2px 0; font-size:10.5px; font-family:'JetBrains Mono',monospace; background:var(--surface2); border:1px solid var(--border); border-radius:4px; color:var(--muted); cursor:help; transition:background .15s; }
+  #panel-stanley .st-cite:hover { background:var(--accent-dim); color:var(--accent); border-color:var(--accent); }
+  /* progress bar (concentration before/after) */
+  #panel-stanley .st-bar-row { display:flex; align-items:center; gap:8px; margin:5px 0; font-size:11px; }
+  #panel-stanley .st-bar-label { width:62px; color:var(--muted); }
+  #panel-stanley .st-bar { flex:1; height:8px; background:var(--surface2); border:1px solid var(--border); border-radius:4px; overflow:hidden; position:relative; }
+  #panel-stanley .st-bar .fill { height:100%; }
+  #panel-stanley .st-bar.before .fill { background:var(--st-warn); }
+  #panel-stanley .st-bar.after .fill { background:var(--st-pos); }
+  #panel-stanley .st-bar-val { width:54px; text-align:right; font-family:'JetBrains Mono',monospace; font-weight:600; }
+  /* tooltip on tile question marks */
+  #panel-stanley .st-tip { display:inline-block; width:14px; height:14px; line-height:14px; text-align:center; border-radius:50%; background:var(--surface); border:1px solid var(--border); color:var(--muted); font-size:9px; font-weight:700; cursor:help; margin-left:5px; vertical-align:middle; }
+  #panel-stanley .st-tip:hover { background:var(--accent-dim); color:var(--accent); border-color:var(--accent); }
+  /* collapsible section */
+  #panel-stanley .st-collapse { background:var(--surface2); border:1px solid var(--border); border-radius:10px; margin-bottom:12px; }
+  #panel-stanley .st-collapse-head { display:flex; align-items:center; justify-content:space-between; padding:11px 14px; cursor:pointer; user-select:none; }
+  #panel-stanley .st-collapse-head:hover { background:var(--surface); }
+  #panel-stanley .st-collapse-title { font-size:12px; font-weight:600; color:var(--text); display:flex; align-items:center; gap:8px; }
+  #panel-stanley .st-collapse-count { font-size:10.5px; color:var(--muted); padding:2px 8px; background:var(--surface); border:1px solid var(--border); border-radius:999px; font-family:'JetBrains Mono',monospace; }
+  #panel-stanley .st-collapse-body { display:none; padding:0 14px 14px 14px; }
+  #panel-stanley .st-collapse.open .st-collapse-body { display:block; animation:st-fade .22s; }
+  #panel-stanley .st-collapse.open .st-chevron { transform:rotate(90deg); }
+  /* row list (for deferred / suppressed / holds) */
+  #panel-stanley .st-row { display:flex; align-items:flex-start; gap:12px; padding:9px 0; border-bottom:1px solid var(--border); font-size:12.5px; }
+  #panel-stanley .st-row:last-child { border-bottom:none; }
+  #panel-stanley .st-row-tk { font-weight:700; min-width:64px; font-size:13px; }
+  /* toggle */
+  #panel-stanley .st-toggle { position:relative; display:inline-block; width:38px; height:22px; }
+  #panel-stanley .st-toggle input { opacity:0; width:0; height:0; }
+  #panel-stanley .st-toggle .sl { position:absolute; cursor:pointer; inset:0; background:#9ca3af; border-radius:22px; transition:.18s; }
+  #panel-stanley .st-toggle .sl::before { content:""; position:absolute; height:16px; width:16px; left:3px; bottom:3px; background:#fff; border-radius:50%; transition:.18s; }
+  #panel-stanley .st-toggle input:checked + .sl { background:var(--st-pos); }
+  #panel-stanley .st-toggle input:checked + .sl::before { transform:translateX(16px); }
+  /* skeleton */
+  #panel-stanley .st-skel { background:linear-gradient(90deg,var(--surface) 0%, var(--surface2) 50%, var(--surface) 100%); background-size:200% 100%; animation:st-pulse 1.4s ease-in-out infinite; border-radius:6px; }
+  @keyframes st-pulse { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
+  /* toast */
+  #stanleyToast { position:fixed; bottom:20px; right:20px; z-index:9999; background:var(--text); color:var(--surface); padding:10px 16px; border-radius:8px; font-size:13px; box-shadow:0 4px 16px rgba(0,0,0,.2); opacity:0; transform:translateY(8px); transition:.18s; pointer-events:none; }
+  #stanleyToast.show { opacity:1; transform:translateY(0); }
+  /* help modal */
+  #stanleyHelpModal { position:fixed; inset:0; z-index:9998; background:rgba(0,0,0,.6); display:none; align-items:center; justify-content:center; }
+  #stanleyHelpModal.open { display:flex; }
+  #stanleyHelpModal .box { background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:24px; max-width:460px; width:92%; box-shadow:0 8px 32px rgba(0,0,0,.4); }
+  #stanleyHelpModal h3 { margin:0 0 14px 0; font-size:16px; }
+  #stanleyHelpModal kbd { display:inline-block; padding:1px 6px; background:var(--surface2); border:1px solid var(--border); border-radius:4px; font-family:'JetBrains Mono',monospace; font-size:11px; }
+  /* layouts */
+  @media (min-width:900px) {
+    #panel-stanley .st-2col { grid-template-columns:2fr 1fr; }
+    #panel-stanley .st-3col { grid-template-columns:1fr 1fr 1fr; }
+    #panel-stanley .st-actions-layout { display:grid; grid-template-columns:2fr 1fr; gap:12px; align-items:start; }
+  }
+  @media (max-width:899px) {
+    #panel-stanley .st-action-top { flex-direction:column; align-items:flex-start; }
+    #panel-stanley .st-reason-short { flex:1 1 100%; }
+  }
+</style>
+
+<div class="panel" id="panel-stanley">
+  <!-- HEADER -->
+  <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:14px;gap:12px;flex-wrap:wrap">
+    <div>
+      <div style="font-size:22px;font-weight:700;letter-spacing:.2px">Stanley</div>
+      <div style="font-size:11px;color:var(--muted);margin-top:2px">advisory only, never places trades. Runs 06:00 / 06:15 / 06:30 CT.</div>
+    </div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+      <div id="stanleyStatusPill" style="display:flex;align-items:center;gap:8px;padding:6px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:999px;font-size:11px;font-family:'JetBrains Mono',monospace">
+        <span id="stanleyStatusDot" style="width:9px;height:9px;border-radius:50%;background:#888"></span>
+        <span id="stanleyStatusText" style="color:var(--muted)">checking...</span>
+      </div>
+      <a id="stanleyReportLink" href="#" target="_blank" class="st-btn" style="text-decoration:none">Report</a>
+      <button class="st-btn" onclick="stanleyRefresh()" title="r">Refresh</button>
+      <button class="st-btn" onclick="stanleyHelp()" title="?">?</button>
+    </div>
+  </div>
+
+  <!-- 1. VERDICT BANNER (full width) -->
+  <div class="st-card" style="margin-bottom:12px;padding:20px 22px">
+    <div id="stanleyVerdict" style="font-size:22px;font-weight:700;line-height:1.4;color:var(--text)">
+      <span class="st-skel" style="display:inline-block;width:60%;height:26px"></span>
+    </div>
+    <div id="stanleyVerdictChips" style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap;font-size:11px;font-family:'JetBrains Mono',monospace"></div>
+  </div>
+
+  <!-- 2. TODAY'S ACTIONS + MONEY TILE -->
+  <div class="st-actions-layout" style="margin-bottom:12px">
+    <div class="st-card">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+        <div class="st-h2" style="margin:0">Today's actions</div>
+        <div id="stanleyActionsCount" style="font-size:11px;color:var(--muted);font-family:'JetBrains Mono',monospace"></div>
+      </div>
+      <div id="stanleyActions" style="display:flex;flex-direction:column;gap:10px">
+        <div style="color:var(--muted);font-size:12px;font-style:italic">Loading...</div>
+      </div>
+    </div>
+    <div class="st-card" style="display:flex;flex-direction:column;gap:14px">
+      <div>
+        <div class="st-h2" style="margin-bottom:6px">Cash if you execute today</div>
+        <div class="st-tile-num" style="font-size:28px" id="stanleyMoneyCash">-</div>
+        <div class="st-tile-sub" id="stanleyMoneyCashNote">across 0 trades</div>
+      </div>
+      <div style="height:1px;background:var(--border)"></div>
+      <div>
+        <div class="st-h2" style="margin-bottom:6px">Today's portfolio change</div>
+        <div class="st-tile-num" id="stanleyMoneyDay">-</div>
+        <div class="st-tile-sub" id="stanleyMoneyDayPct">-</div>
+      </div>
+      <div style="height:1px;background:var(--border)"></div>
+      <div>
+        <div class="st-h2" style="margin-bottom:6px">Realized gains YTD</div>
+        <div class="st-tile-num" id="stanleyMoneyYtd">-</div>
+        <div class="st-tile-sub">closed positions</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 3.5 RULE PINGS -- protocol violations the LLM flagged -->
+  <div id="stanleyRulePingsBox" style="margin:12px 0;padding:12px;background:rgba(180,83,9,.08);border-left:3px solid var(--st-warn);border-radius:6px;display:none">
+    <div style="font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--st-warn);font-weight:700;margin-bottom:8px">PROTOCOL FLAGS</div>
+    <div id="stanleyRulePings" style="font-size:12px;line-height:1.6;color:var(--text)"></div>
+  </div>
+
+  <!-- 3.6 DISCOVERY -- new BUY candidates the system surfaced this morning -->
+  <div class="st-collapse" id="stanleyDiscoveryBox">
+    <div class="st-collapse-head" onclick="stToggleCollapse('stanleyDiscoveryBox')">
+      <div class="st-collapse-title"><span class="st-chevron">&#9656;</span> Discovery candidates <span style="font-weight:400;color:var(--muted)">- new BUY ideas (insider clusters / breakouts / upgrade waves)</span></div>
+      <div class="st-collapse-count" id="stanleyDiscoveryCount">0</div>
+    </div>
+    <div class="st-collapse-body" id="stanleyDiscovery"></div>
+  </div>
+
+  <!-- 4. DEFERRED -->
+  <div class="st-collapse" id="stanleyDeferredBox">
+    <div class="st-collapse-head" onclick="stToggleCollapse('stanleyDeferredBox')">
+      <div class="st-collapse-title"><span class="st-chevron">&#9656;</span> Deferred to tomorrow <span style="font-weight:400;color:var(--muted)">- planned but not today</span></div>
+      <div class="st-collapse-count" id="stanleyDeferredCount">0</div>
+    </div>
+    <div class="st-collapse-body" id="stanleyDeferred"></div>
+  </div>
+
+  <!-- 5. SUPPRESSED -->
+  <div class="st-collapse" id="stanleySuppressedBox">
+    <div class="st-collapse-head" onclick="stToggleCollapse('stanleySuppressedBox')">
+      <div class="st-collapse-title"><span class="st-chevron">&#9656;</span> Stanley wanted to but couldn't <span style="font-weight:400;color:var(--muted)">- blocked actions, with reasons</span></div>
+      <div class="st-collapse-count" id="stanleySuppressedCount">0</div>
+    </div>
+    <div class="st-collapse-body" id="stanleySuppressed"></div>
+  </div>
+
+  <!-- 5.5 REJECTED BUYS - candidates Stanley considered but said no -->
+  <div class="st-collapse" id="stanleyRejectedBox">
+    <div class="st-collapse-head" onclick="stToggleCollapse('stanleyRejectedBox')">
+      <div class="st-collapse-title"><span class="st-chevron">&#9656;</span> Considered, skipped <span style="font-weight:400;color:var(--muted)">- discovery candidates Stanley evaluated and said no to today</span></div>
+      <div class="st-collapse-count" id="stanleyRejectedCount">0</div>
+    </div>
+    <div class="st-collapse-body" id="stanleyRejected"></div>
+  </div>
+
+  <!-- 6. HOLDS -->
+  <div class="st-collapse" id="stanleyHoldsBox">
+    <div class="st-collapse-head" onclick="stToggleCollapse('stanleyHoldsBox')">
+      <div class="st-collapse-title"><span class="st-chevron">&#9656;</span> Holds <span style="font-weight:400;color:var(--muted)">- explicitly leaving alone</span></div>
+      <div class="st-collapse-count" id="stanleyHoldsCount">0</div>
+    </div>
+    <div class="st-collapse-body" id="stanleyHolds"></div>
+  </div>
+
+  <!-- 7. PORTFOLIO HEALTH TILES (6 cards) -->
+  <div class="st-h2" style="margin-top:14px">Portfolio health</div>
+  <div class="st-grid" style="grid-template-columns:repeat(auto-fit,minmax(160px,1fr));margin-bottom:12px">
+    <div class="st-card" style="padding:12px">
+      <div class="st-h2" style="margin-bottom:6px">Total value <span class="st-tip" title="Everything in your account: positions plus cash.">?</span></div>
+      <div class="st-tile-num" id="stanleyPortfolioValue">-</div>
+      <div class="st-tile-sub" id="stanleyPositionCount">- positions</div>
+    </div>
+    <div class="st-card" style="padding:12px">
+      <div class="st-h2" style="margin-bottom:6px">Cash % <span class="st-tip" title="Cash as a share of your total. Higher = more dry powder for opportunities.">?</span></div>
+      <div class="st-tile-num" id="stanleyCashPct">-</div>
+      <div class="st-tile-sub">of portfolio</div>
+    </div>
+    <div class="st-card" style="padding:12px">
+      <div class="st-h2" style="margin-bottom:6px">Margin <span class="st-tip" title="Money you owe the broker. Target is zero. Red if greater than zero.">?</span></div>
+      <div class="st-tile-num" id="stanleyMargin">-</div>
+      <div class="st-tile-sub" id="stanleyMarginNote">target $0</div>
+    </div>
+    <div class="st-card" style="padding:12px">
+      <div class="st-h2" style="margin-bottom:6px">Effective N <span class="st-tip" title="How many truly independent bets you have. Below 3 = too concentrated. 5+ is healthy diversification.">?</span></div>
+      <div class="st-tile-num" id="stanleyEffN">-</div>
+      <div class="st-tile-sub" id="stanleyEffNNote">independent bets</div>
+    </div>
+    <div class="st-card" style="padding:12px">
+      <div class="st-h2" style="margin-bottom:6px">Tech exposure <span class="st-tip" title="Total tech weight including ETF lookthrough. Above 35% = too heavy in one sector.">?</span></div>
+      <div class="st-tile-num" id="stanleyTechPct">-</div>
+      <div class="st-tile-sub" id="stanleyTechPctNote">incl. ETFs</div>
+    </div>
+    <div class="st-card" style="padding:12px">
+      <div class="st-h2" style="margin-bottom:6px">Top position <span class="st-tip" title="Your single largest position by dollar value. Cap is 10%. If a stock crashes 50% and it's 20% of you, that's a 10% portfolio hit.">?</span></div>
+      <div class="st-tile-num" id="stanleyTop1">-</div>
+      <div class="st-tile-sub" id="stanleyTop1Note">cap 10%</div>
+    </div>
+  </div>
+
+  <!-- 7.5 DAY TRADE HUNTER -- live RSI/MACD/Bollinger setups, ranked -->
+  <div class="st-collapse" id="stanleyDTHunterBox" style="margin-top:14px">
+    <div class="st-collapse-head" onclick="stToggleCollapse('stanleyDTHunterBox')">
+      <div class="st-collapse-title"><span class="st-chevron">&#9656;</span> Day Trade Hunter <span style="font-weight:400;color:var(--muted)">- live RSI/MACD/Bollinger setups, ranked</span></div>
+      <div style="display:flex;gap:6px;align-items:center">
+        <button class="st-btn primary" onclick="event.stopPropagation();stDTRefresh()">Scan now</button>
+        <div class="st-collapse-count" id="stanleyDTCount">0</div>
+      </div>
+    </div>
+    <div class="st-collapse-body" id="stanleyDTHunter"></div>
+  </div>
+
+  <!-- 8. TASKS PANEL -->
+  <div class="st-card" style="margin-bottom:12px">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+      <div class="st-h2" style="margin:0">Scheduled tasks (Mon-Fri CT)</div>
+      <div style="font-size:10px;color:var(--muted)">uses Claude Max sub tokens</div>
+    </div>
+    <div id="stanleyTasks" style="display:flex;flex-direction:column;gap:6px;font-size:12px">
+      <div style="color:var(--muted);font-style:italic">Loading...</div>
+    </div>
+  </div>
+
+  <!-- 5 + 6. macro gauge + concentration -->
+  <div class="st-grid st-2col" style="margin-bottom:12px">
+    <div class="st-card">
+      <div class="st-h2">Macro regime</div>
+      <div id="stanleyMacroLabel" style="font-size:18px;font-weight:700;margin-bottom:8px">-</div>
+      <div class="st-gauge" id="stanleyMacroGauge">
+        <div class="seg" style="left:0;width:33%;background:rgba(4,120,87,.18)"></div>
+        <div class="seg" style="left:33%;width:34%;background:rgba(180,83,9,.18)"></div>
+        <div class="seg" style="left:67%;width:33%;background:rgba(185,28,28,.18)"></div>
+        <div class="needle" id="stanleyMacroNeedle" style="left:50%"></div>
+      </div>
+      <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--muted);margin-top:5px">
+        <span>risk-on</span><span>neutral</span><span>risk-off</span>
+      </div>
+      <details style="margin-top:10px">
+        <summary style="cursor:pointer;font-size:11px;color:var(--muted)">8-series detail</summary>
+        <div id="stanleyMacroDetail" style="margin-top:8px;font-size:11px;display:flex;flex-direction:column;gap:4px"></div>
+      </details>
+    </div>
+    <div class="st-card">
+      <div class="st-h2">Lookthrough top 5</div>
+      <div id="stanleyLookthrough" style="font-size:12px;display:flex;flex-direction:column;gap:5px">
+        <div style="color:var(--muted);font-style:italic">Loading...</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 7. SCORING GRID (sortable) -->
+  <div class="st-card" style="margin-bottom:12px">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;gap:10px;flex-wrap:wrap">
+      <div class="st-h2" style="margin:0">Holdings (sortable - click headers)</div>
+      <input id="stanleyFilter" placeholder="filter ticker..." style="padding:5px 8px;background:var(--surface);color:var(--text);border:1px solid var(--border);border-radius:6px;font-size:11px;font-family:'JetBrains Mono',monospace;width:140px">
+    </div>
+    <div style="overflow-x:auto">
+      <table class="st-table" id="stanleyGrid">
+        <thead><tr>
+          <th data-sort="ticker">Ticker</th>
+          <th data-sort="rec">Rec</th>
+          <th data-sort="score" data-num>Score</th>
+          <th data-sort="mv" data-num>$ Value</th>
+          <th data-sort="day" data-num>Day %</th>
+          <th data-sort="rs" data-num>RS vs SPY</th>
+          <th data-sort="ltcg" data-num>LTCG days</th>
+          <th>Spark 60d</th>
+        </tr></thead>
+        <tbody id="stanleyGridBody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- 8 + 9. recents + sycophancy + incidents -->
+  <div class="st-grid st-3col" style="margin-bottom:12px">
+    <div class="st-card">
+      <div class="st-h2">Recent recommendations</div>
+      <div id="stanleyRecents" style="font-size:12px"></div>
+    </div>
+    <div class="st-card">
+      <div class="st-h2">Sycophancy check</div>
+      <div id="stanleySycophancy" style="font-size:12px"></div>
+    </div>
+    <div class="st-card">
+      <div class="st-h2" style="display:flex;justify-content:space-between">
+        <span>Incidents <span id="stanleyIncidentsBadge" style="display:none;background:var(--st-neg);color:#fff;padding:1px 6px;border-radius:8px;font-size:9px;margin-left:4px"></span></span>
+      </div>
+      <details>
+        <summary style="cursor:pointer;font-size:12px;color:var(--muted)">show last 50</summary>
+        <div id="stanleyIncidents" style="margin-top:8px;font-size:11px;font-family:'JetBrains Mono',monospace;max-height:200px;overflow-y:auto"></div>
+      </details>
+    </div>
+  </div>
+
+  <!-- sources collapsed -->
+  <details class="st-card" style="padding:10px 14px">
+    <summary style="cursor:pointer;font-size:11px;color:var(--muted)">data sources + module map</summary>
+    <div style="margin-top:10px;font-size:12px;line-height:1.7">
+      <div><b>price/snap</b>: yfinance · <b>filings</b>: SEC EDGAR · <b>insiders</b>: Form 4 XML + openinsider</div>
+      <div><b>analysts</b>: Finnhub · <b>news</b>: Yahoo RSS · <b>short int</b>: FINRA · <b>options</b>: yfinance chains</div>
+      <div><b>macro</b>: 8 FRED series (T10Y3M, BAMLH0A0HYM2, RECPROUSM156N, SAHMREALTIME, DFII10, STLFSI4, PCEPILFE, CFNAIMA3)</div>
+      <div><b>RS</b>: IBD-weighted 12mo vs SPY + 11 SPDRs · <b>options</b>: ^CPC/^CPCE/^CPCI + VIX/VIX3M term</div>
+      <div><b>concentration</b>: Meucci effective N + ETF lookthrough (SPY/VOO/VTI/QQQ/VGT/XLK/ARKK/VTV/IWM)</div>
+      <div style="margin-top:8px;color:var(--muted);font-size:11px">files: C:\Users\Keela\Desktop\AI\Trading-Bot\</div>
+    </div>
+  </details>
+
+  <div class="panel-footer" style="margin-top:12px">
+    <span><span class="timestamp" id="stanleyUpdated">-</span></span>
+    <span>refresh 60s · keys: r=refresh ?=help /=filter</span>
+  </div>
+</div>
+
+<div id="stanleyToast"></div>
+<div id="stanleyHelpModal" onclick="if(event.target.id==='stanleyHelpModal') stanleyHelp()">
+  <div class="box">
+    <h3>Keyboard shortcuts</h3>
+    <div style="display:flex;flex-direction:column;gap:8px;font-size:13px;line-height:1.6">
+      <div><kbd>r</kbd> &nbsp; Refresh data</div>
+      <div><kbd>?</kbd> &nbsp; Toggle this help</div>
+      <div><kbd>/</kbd> &nbsp; Focus ticker filter</div>
+      <div><kbd>Esc</kbd> &nbsp; Close this modal</div>
+    </div>
+    <div style="margin-top:18px;font-size:11px;color:var(--muted);line-height:1.5">
+      Stanley is advisory only. Numbers are recommendations, not orders. Trades are placed manually in Schwab.
+    </div>
+    <div style="text-align:right;margin-top:16px">
+      <button class="st-btn" onclick="stanleyHelp()">close</button>
+    </div>
+  </div>
 </div>
 
 <script>
-// ============ P&L TRACKER ============
-// UPDATE THESE VALUES to track money spent on and made with Claude.
-// "spent" = actual dollars paid to Anthropic (not free tokens).
-// "made" = revenue generated using Claude automation.
-// Claude Max 5x plan: $100/mo. Started approx 2026-03-25 (based on
-// .claude/.credentials.json creation date). Months active: 1 (22 days
-// in, first billing cycle only). Update monthly or when subscription
-// changes. Keelan should confirm exact start date if different.
-var PNL = { spent: 100, made: 0 };
+// ============ STANLEY (TRADING BOT) v3 ============
+var STANLEY = {
+  sweep: null, recs: null, tasks: null, macro: null, sycophancy: null,
+  incidents: null, recentsList: null, overrides: null, hitRate: null,
+  dtSetups: null,
+  sortKey: 'score', sortDir: -1, filter: '',
+};
 
-function renderPnl() {
-  var net = PNL.made - PNL.spent;
-  var fmt = function(v) { return (v < 0 ? '-' : '') + '$' + Math.abs(v).toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 2 }); };
-  document.getElementById('pnlSpent').textContent = fmt(PNL.spent);
-  document.getElementById('pnlMade').textContent = fmt(PNL.made);
-  var netEl = document.getElementById('pnlNet');
-  netEl.textContent = fmt(net);
-  netEl.className = 'pnl-value ' + (net > 0 ? 'pnl-net-pos' : net < 0 ? 'pnl-net-neg' : 'pnl-net-zero');
+function stToast(msg, kind) {
+  var el = document.getElementById('stanleyToast');
+  el.textContent = msg;
+  el.style.background = kind === 'err' ? '#B91C1C' : kind === 'ok' ? '#047857' : 'var(--text)';
+  el.style.color = '#fff';
+  el.classList.add('show');
+  setTimeout(function(){ el.classList.remove('show'); }, 2400);
 }
-document.addEventListener('DOMContentLoaded', renderPnl);
 
+function stFmt$(v, dp) {
+  if (v == null || isNaN(v)) return '-';
+  return '$' + Number(v).toLocaleString('en-US', { maximumFractionDigits: dp == null ? 0 : dp });
+}
+function stFmtPct(v, dp) {
+  if (v == null || isNaN(v)) return '-';
+  return Number(v).toFixed(dp == null ? 1 : dp) + '%';
+}
+function stEsc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function(c){
+  return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];
+}); }
+
+// sparkline from array of numbers
+function stSpark(values, w, h, color) {
+  if (!values || values.length < 2) return '';
+  w = w || 80; h = h || 22;
+  var min = Math.min.apply(null, values), max = Math.max.apply(null, values);
+  var range = (max - min) || 1;
+  var step = w / (values.length - 1);
+  var pts = values.map(function(v, i) {
+    return (i*step).toFixed(1) + ',' + (h - ((v-min)/range)*h).toFixed(1);
+  }).join(' ');
+  var c = color || (values[values.length-1] >= values[0] ? 'var(--st-pos)' : 'var(--st-neg)');
+  return '<svg class="st-spark" width="'+w+'" height="'+h+'" viewBox="0 0 '+w+' '+h+'">'
+    + '<polyline fill="none" stroke="'+c+'" stroke-width="1.5" points="'+pts+'"/></svg>';
+}
+
+async function stFetch(url, opts) {
+  try {
+    var r = await fetch(url, Object.assign({ cache: 'no-store' }, opts || {}));
+    if (!r.ok) return null;
+    return await r.json();
+  } catch { return null; }
+}
+
+async function stanleyRefresh() {
+  var [sweep, recs, tasks, macro, sycophancy, incidents, recentsList, overrides, hitRate] = await Promise.all([
+    stFetch('/api/stanley/sweep'),
+    stFetch('/api/stanley/recommendations'),
+    stFetch('/api/stanley/tasks'),
+    stFetch('/api/stanley/macro'),
+    stFetch('/api/stanley/sycophancy'),
+    stFetch('/api/stanley/incidents'),
+    stFetch('/api/stanley/recommendations/list'),
+    stFetch('/api/stanley/overrides'),
+    stFetch('/api/stanley/hit-rate'),
+  ]);
+  STANLEY.sweep = sweep || {};
+  STANLEY.recs = recs || {};
+  STANLEY.tasks = tasks || { tasks: [] };
+  STANLEY.macro = macro || {};
+  STANLEY.sycophancy = sycophancy || {};
+  STANLEY.incidents = incidents || { incidents: [] };
+  STANLEY.recentsList = recentsList || { list: [] };
+  STANLEY.overrides = overrides || {};
+  STANLEY.hitRate = hitRate || {};
+  stRenderAll();
+}
+
+// dropdown state persistence
+function stLoadDropdownState() {
+  try { return JSON.parse(localStorage.getItem('stanley_dropdown_state') || '{}'); }
+  catch { return {}; }
+}
+function stSaveDropdownState(state) {
+  try { localStorage.setItem('stanley_dropdown_state', JSON.stringify(state)); } catch {}
+}
+function stToggleWhy(recId) {
+  var elId = 'stWhy_' + recId;
+  var el = document.getElementById(elId);
+  if (!el) return;
+  var open = el.classList.toggle('st-why-open');
+  var state = stLoadDropdownState();
+  state[elId] = open;
+  stSaveDropdownState(state);
+}
+function stToggleCollapse(boxId) {
+  var el = document.getElementById(boxId);
+  if (!el) return;
+  var open = el.classList.toggle('open');
+  var state = stLoadDropdownState();
+  state[boxId] = open;
+  stSaveDropdownState(state);
+}
+
+// pull actions defensively from new or old shape
+function stGetActions() {
+  if (!STANLEY.recs) return [];
+  if (Array.isArray(STANLEY.recs.actions)) return STANLEY.recs.actions;
+  if (STANLEY.recs.structured && Array.isArray(STANLEY.recs.structured.actions)) return STANLEY.recs.structured.actions;
+  if (Array.isArray(STANLEY.recs.recommendations)) return STANLEY.recs.recommendations;
+  if (Array.isArray(STANLEY.recs.recs)) return STANLEY.recs.recs;
+  return [];
+}
+function stGetField(name) {
+  if (!STANLEY.recs) return null;
+  if (STANLEY.recs[name] != null) return STANLEY.recs[name];
+  if (STANLEY.recs.structured && STANLEY.recs.structured[name] != null) return STANLEY.recs.structured[name];
+  return null;
+}
+
+function stRenderAll() {
+  stRenderStatus();
+  stRenderVerdict();
+  stRenderActions();
+  stRenderMoneyTile();
+  stRenderRulePings();
+  stRenderDiscovery();
+  stRenderDeferred();
+  stRenderSuppressed();
+  stRenderRejected();
+  stRenderHolds();
+  stRenderSnapshot();
+  stRenderTasks();
+  stRenderDTHunter();
+  stRenderMacro();
+  stRenderConcentration();
+  stRenderGrid();
+  stRenderRecents();
+  stRenderSycophancy();
+  stRenderIncidents();
+  stRenderReportLink();
+  var ts = STANLEY.sweep && STANLEY.sweep.timestamp;
+  document.getElementById('stanleyUpdated').textContent = ts ? 'updated ' + ts.slice(11,16) : '-';
+  // restore collapsed dropdown state
+  var state = stLoadDropdownState();
+  Object.keys(state).forEach(function(k){
+    if (state[k] === true) {
+      var box = document.getElementById(k);
+      if (box) {
+        if (k.indexOf('stWhy_') === 0) box.classList.add('st-why-open');
+        else box.classList.add('open');
+      }
+    }
+  });
+}
+
+function stRenderReportLink() {
+  var date = (STANLEY.recs && STANLEY.recs.date) || new Date().toISOString().slice(0,10);
+  var link = document.getElementById('stanleyReportLink');
+  if (link) link.href = '/data/recommendations/' + date + '.md';
+}
+
+function stRenderStatus() {
+  var dot = document.getElementById('stanleyStatusDot');
+  var txt = document.getElementById('stanleyStatusText');
+  var today = new Date().toISOString().slice(0,10);
+  var d = STANLEY.sweep && STANLEY.sweep.date;
+  if (d === today) { dot.style.background = '#2ecc71'; txt.textContent = 'swept today'; txt.style.color = '#2ecc71'; }
+  else if (d) { dot.style.background = '#f39c12'; txt.textContent = 'stale: ' + d; txt.style.color = '#f39c12'; }
+  else { dot.style.background = '#888'; txt.textContent = 'no sweep yet'; txt.style.color = 'var(--muted)'; }
+  // urgent badge on tab
+  var badge = document.getElementById('stanleyUrgentBadge');
+  if (badge) {
+    var urgent = ((STANLEY.sweep || {}).results || []).filter(function(r){
+      return r.urgency === 'urgent' || (r.flags || []).some(function(f){return f.severity==='bad'});
+    }).length;
+    badge.textContent = urgent;
+  }
+}
+
+function stRenderVerdict() {
+  // prefer new contract: summary, portfolio_snapshot, as_of
+  var summary = stGetField('summary')
+    || (STANLEY.recs && (STANLEY.recs.summary_one_line || STANLEY.recs.verdict))
+    || 'No recommendations yet today. Stanley runs at 06:30 CT.';
+  document.getElementById('stanleyVerdict').textContent = summary;
+
+  var snap = stGetField('portfolio_snapshot') || (STANLEY.sweep && STANLEY.sweep.portfolio_health) || {};
+  var asOf = stGetField('as_of') || (STANLEY.sweep && STANLEY.sweep.timestamp) || '';
+  var chips = [];
+  if (snap.total_value_usd != null) chips.push({txt: stFmt$(snap.total_value_usd), color:'var(--text)'});
+  if (snap.cash_pct != null) chips.push({txt: stFmtPct(snap.cash_pct,1) + ' cash', color:'var(--text)'});
+  if (snap.margin_debt_usd != null) {
+    var marg = snap.margin_debt_usd;
+    chips.push({txt: stFmt$(marg) + ' margin', color: marg > 0 ? 'var(--st-neg)' : 'var(--st-pos)'});
+  }
+  if (snap.macro_regime) {
+    var reg = String(snap.macro_regime).toLowerCase();
+    var rc = reg.indexOf('off') >= 0 ? 'var(--st-neg)' : reg.indexOf('on') >= 0 ? 'var(--st-pos)' : 'var(--st-warn)';
+    chips.push({txt: reg.replace(/_/g,' '), color: rc});
+  }
+  if (asOf) {
+    var hhmm = String(asOf).length >= 16 ? String(asOf).slice(11,16) : asOf;
+    chips.push({txt: 'as of ' + hhmm, color:'var(--muted)'});
+  }
+  document.getElementById('stanleyVerdictChips').innerHTML = chips.map(function(c){
+    return '<span style="padding:4px 11px;background:var(--surface);border:1px solid var(--border);border-radius:999px;color:'+c.color+'">'+stEsc(c.txt)+'</span>';
+  }).join('');
+}
+
+function stPillClass(act) {
+  act = String(act || '').toUpperCase();
+  if (/BUY|ADD/.test(act)) return 'buy';
+  if (/SELL|TRIM/.test(act)) return 'sell';
+  if (/NO_BUY|NO_REC|AVOID/.test(act)) return 'warn';
+  return 'hold';
+}
+
+function stRenderParagraphs(text) {
+  if (!text) return '';
+  return String(text).split(/\n{2,}/).map(function(p){
+    return '<p>'+stEsc(p.trim()).replace(/\n/g,'<br>')+'</p>';
+  }).join('');
+}
+
+function stCitationChip(c) {
+  if (!c) return '';
+  var key = c.key || '';
+  var text = c.text || '';
+  var literal = '';
+  // try to resolve key against sweep
+  try {
+    var parts = key.split('.');
+    var v = STANLEY.sweep || {};
+    // results.MU.position.market_value -> walk results array
+    if (parts[0] === 'results' && Array.isArray(v.results)) {
+      var ticker = parts[1];
+      var match = v.results.find(function(r){ return r && r.ticker === ticker; });
+      v = match || null;
+      for (var i = 2; v && i < parts.length; i++) v = v[parts[i]];
+    } else {
+      for (var j = 0; v && j < parts.length; j++) v = v[parts[j]];
+    }
+    if (v != null && typeof v !== 'object') literal = String(v);
+  } catch {}
+  var hover = key + (literal ? ' = ' + literal : '');
+  return '<span class="st-cite" title="'+stEsc(hover)+'">[sweep:'+stEsc(key)+']'+(text?' '+stEsc(text):'')+'</span>';
+}
+
+function stRenderActions() {
+  // Defensive: only ever show actionable items in this card section. The
+  // backend should filter HOLD/NO_BUY out; defend in depth in case a future
+  // schema change leaks them through.
+  var ACTIONABLE = {BUY:1, ADD:1, SELL:1, TRIM:1};
+  var recs = (stGetActions() || []).filter(function(r){
+    return ACTIONABLE[String(r.action||'').toUpperCase()];
+  });
+  var box = document.getElementById('stanleyActions');
+  document.getElementById('stanleyActionsCount').textContent = recs.length + (recs.length === 1 ? ' action' : ' actions');
+  if (!recs.length) {
+    var summary = (STANLEY.recs && STANLEY.recs.summary) || '';
+    box.innerHTML = '<div style="color:var(--muted);font-size:13px;padding:18px 4px;text-align:center;line-height:1.6">'
+      + '<div style="font-size:14px;color:var(--text);font-weight:600;margin-bottom:6px">Nothing to execute today</div>'
+      + (summary ? '<div style="margin-bottom:6px">' + stEsc(summary) + '</div>' : '')
+      + '<div style="font-style:italic">Stanley does not need you to click anything. The sections below explain what is being held, considered, or deferred.</div>'
+      + '</div>';
+    return;
+  }
+  var dropState = stLoadDropdownState();
+  box.innerHTML = recs.map(function(r, idx){
+    var act = String(r.action || 'HOLD').toUpperCase();
+    var pillCls = stPillClass(act);
+    var qty = r.qty_shares != null ? r.qty_shares : (r.qty || '');
+    var dollars = r.approx_dollars != null ? r.approx_dollars : (qty && r.price_ref_usd ? qty * r.price_ref_usd : null);
+    var reasonShort = r.reason_short || r.reason || r.thesis || '';
+    var reasonFull = r.reason_full || '';
+    var details = Array.isArray(r.details) ? r.details : [];
+    var citations = Array.isArray(r.citations) ? r.citations : [];
+    var orderText = (act + ' ' + (qty || '') + ' ' + r.ticker + ' MKT').replace(/\s+/g,' ').trim();
+    var rid = r.rec_id || (r.ticker + '-' + act + '-' + idx);
+    var ridSafe = String(rid).replace(/[^A-Za-z0-9_-]/g,'_');
+
+    // LTCG badge
+    var ltcgBadge = '';
+    if (r.holding_days != null) {
+      var hd = r.holding_days;
+      var ltcg = r.ltcg_eligible === true || (r.ltcg_eligible == null && hd >= 365);
+      var cls = ltcg ? 'ok' : 'warn';
+      var label = ltcg
+        ? 'Holding period: ' + hd + ' days (long-term gains, lower tax)'
+        : 'Holding period: ' + hd + ' days (short-term, ' + Math.max(0, 365 - hd) + ' days until LTCG)';
+      ltcgBadge = '<span class="st-badge '+cls+'">'+stEsc(label)+'</span>';
+    }
+
+    // concentration bars
+    var concBars = '';
+    if (r.concentration_pct_current != null) {
+      var cur = r.concentration_pct_current;
+      var post = r.concentration_pct_post_trim != null ? r.concentration_pct_post_trim : null;
+      var maxScale = Math.max(15, cur, post||0); // cap visualization at ~15% scale for clarity
+      var curW = Math.min(100, (cur/maxScale)*100);
+      concBars = '<div style="margin:10px 0">'
+        + '<div style="font-size:11px;color:var(--muted);margin-bottom:4px">Position size as % of portfolio (cap is 10%)</div>'
+        + '<div class="st-bar-row"><span class="st-bar-label">before</span><div class="st-bar before"><div class="fill" style="width:'+curW.toFixed(1)+'%"></div></div><span class="st-bar-val">'+stFmtPct(cur,2)+'</span></div>';
+      if (post != null) {
+        var postW = Math.min(100, (post/maxScale)*100);
+        concBars += '<div class="st-bar-row"><span class="st-bar-label">after</span><div class="st-bar after"><div class="fill" style="width:'+postW.toFixed(1)+'%"></div></div><span class="st-bar-val">'+stFmtPct(post,2)+'</span></div>';
+      }
+      concBars += '</div>';
+    }
+
+    // citations
+    var citesHtml = '';
+    if (citations.length) {
+      citesHtml = '<div style="margin-top:10px"><div style="font-size:10.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:5px">Sources (hover to see value)</div>'
+        + citations.map(stCitationChip).join('') + '</div>';
+    }
+
+    var conf = r.confidence;
+    var confLabel = '';
+    if (conf != null) {
+      if (typeof conf === 'string') confLabel = conf.toLowerCase();
+      else if (typeof conf === 'number') confLabel = (conf >= 0.7 ? 'high' : conf >= 0.4 ? 'medium' : 'low');
+    }
+
+    var isOpen = dropState['stWhy_' + ridSafe] === true;
+    var openClass = isOpen ? ' st-why-open' : '';
+
+    var qtyHtml = qty ? '<span class="st-qty">'+stEsc(qty)+' shares</span>' : '';
+    var dollarHtml = dollars != null ? '<span class="st-dollar">~'+stFmt$(dollars)+'</span>' : '';
+    var confHtml = confLabel ? '<span style="font-size:10.5px;color:var(--muted);font-family:JetBrains Mono,monospace">conf '+stEsc(confLabel)+'</span>' : '';
+
+    return '<div class="st-action" id="stAction_'+ridSafe+'">'
+      +   '<div class="st-action-top">'
+      +     '<span class="st-pill '+pillCls+'">'+stEsc(act)+'</span>'
+      +     '<span class="st-ticker">'+stEsc(r.ticker)+'</span>'
+      +     qtyHtml + dollarHtml + confHtml
+      +     (reasonShort ? '<span class="st-reason-short">'+stEsc(reasonShort)+'</span>' : '')
+      +   '</div>'
+      +   '<div class="st-action-row">'
+      +     '<button class="st-btn primary-action" onclick="stCopy(\''+stEsc(orderText)+'\')">Copy Order</button>'
+      +     '<button class="st-btn primary" onclick="window.open(\'https://client.schwab.com/app/trade/tom/#/trade\',\'_blank\')">Open Schwab</button>'
+      +     '<button class="st-btn" onclick="stMarkExec('+JSON.stringify(JSON.stringify(r))+', false)">Done</button>'
+      +     '<button class="st-btn" onclick="stMarkExec('+JSON.stringify(JSON.stringify(r))+', true)">Skip</button>'
+      +     '<button class="st-btn" onclick="stSnooze(\''+stEsc(r.ticker)+'\')">Snooze 7d</button>'
+      +   '</div>'
+      +   '<div id="stWhy_'+ridSafe+'"'+(openClass?' class="st-why-open"':'')+'>'
+      +     '<button class="st-why-trigger" onclick="stToggleWhy(\''+ridSafe+'\')">'
+      +       '<span class="st-chevron">&#9656;</span> Why? show full reasoning'
+      +     '</button>'
+      +     '<div class="st-why-body">'
+      +       (reasonFull ? stRenderParagraphs(reasonFull) : (reasonShort ? '<p>'+stEsc(reasonShort)+'</p>' : ''))
+      +       (details.length ? '<ul>'+details.map(function(d){return '<li>'+stEsc(d)+'</li>';}).join('')+'</ul>' : '')
+      +       (ltcgBadge ? '<div style="margin:8px 0">'+ltcgBadge+'</div>' : '')
+      +       concBars
+      +       citesHtml
+      +     '</div>'
+      +   '</div>'
+      + '</div>';
+  }).join('');
+}
+
+function stRenderMoneyTile() {
+  var totals = stGetField('totals') || {};
+  var actions = stGetActions();
+  var snap = stGetField('portfolio_snapshot') || (STANLEY.sweep && STANLEY.sweep.portfolio_health) || {};
+  // proceeds if all executed
+  var proceeds = totals.total_proceeds_if_all_executed;
+  if (proceeds == null) {
+    proceeds = actions.reduce(function(s, a){
+      var act = String(a.action || '').toUpperCase();
+      var d = a.approx_dollars || 0;
+      // SELL/TRIM raises cash, BUY/ADD lowers (negative)
+      if (/BUY|ADD/.test(act)) return s - d;
+      return s + d;
+    }, 0);
+  }
+  document.getElementById('stanleyMoneyCash').textContent = stFmt$(proceeds || 0);
+  document.getElementById('stanleyMoneyCashNote').textContent = 'across ' + actions.length + ' trade' + (actions.length === 1 ? '' : 's');
+
+  // today's portfolio change
+  var dayChg = snap.day_change_usd != null ? snap.day_change_usd : (snap.day_change != null ? snap.day_change : null);
+  var dayPct = snap.day_change_pct;
+  var moneyDay = document.getElementById('stanleyMoneyDay');
+  if (dayChg != null) {
+    moneyDay.textContent = (dayChg >= 0 ? '+' : '-') + stFmt$(Math.abs(dayChg), 2);
+    moneyDay.style.color = dayChg >= 0 ? 'var(--st-pos)' : 'var(--st-neg)';
+  } else { moneyDay.textContent = '-'; moneyDay.style.color = 'var(--text)'; }
+  document.getElementById('stanleyMoneyDayPct').textContent = dayPct != null
+    ? (dayPct >= 0 ? '+' : '') + stFmtPct(dayPct, 2) + ' today'
+    : 'price feed pending';
+
+  // YTD realized
+  var ytd = stGetField('realized_gains_ytd_usd');
+  if (ytd == null) ytd = (STANLEY.sweep && STANLEY.sweep.realized_gains_ytd_usd) || null;
+  var ytdEl = document.getElementById('stanleyMoneyYtd');
+  if (ytd != null) {
+    ytdEl.textContent = stFmt$(ytd);
+    ytdEl.style.color = ytd >= 0 ? 'var(--st-pos)' : 'var(--st-neg)';
+  } else {
+    ytdEl.textContent = '-';
+    ytdEl.style.color = 'var(--muted)';
+  }
+}
+
+function stRenderRowList(boxId, items, mapper, emptyMsg) {
+  var box = document.getElementById(boxId);
+  if (!box) return;
+  if (!items || !items.length) {
+    box.innerHTML = '<div style="color:var(--muted);font-style:italic;font-size:12px;padding:8px 0">'+stEsc(emptyMsg)+'</div>';
+    return;
+  }
+  box.innerHTML = items.map(mapper).join('');
+}
+
+function stRenderRulePings() {
+  var pings = stGetField('rule_pings') || [];
+  var box = document.getElementById('stanleyRulePingsBox');
+  var body = document.getElementById('stanleyRulePings');
+  if (!pings.length) { box.style.display = 'none'; return; }
+  box.style.display = 'block';
+  body.innerHTML = pings.map(function(p){
+    var txt = typeof p === 'string' ? p : (p.text || JSON.stringify(p));
+    // strip [sweep:KEY] tags for display
+    txt = txt.replace(/\s*\[sweep:[^\]]+\]/g, '');
+    return '<div style="margin-bottom:6px;padding-left:14px;position:relative">'
+      + '<span style="position:absolute;left:0;color:var(--st-warn)">!</span>'
+      + stEsc(txt)
+      + '</div>';
+  }).join('');
+}
+
+function stRenderDiscovery() {
+  var items = stGetField('discovery_top') || [];
+  document.getElementById('stanleyDiscoveryCount').textContent = items.length;
+  stRenderRowList('stanleyDiscovery', items, function(c){
+    var screenLabel = String(c.screen||'').replace(/_/g,' ');
+    var earnTxt = c.earnings_next ? ' earn '+c.earnings_next : '';
+    var reasons = (c.reasons||[]).map(function(r){
+      return '<div style="font-size:11px;color:var(--muted);margin-top:2px">' + stEsc(r) + '</div>';
+    }).join('');
+    var badge = '<span style="display:inline-block;padding:2px 7px;border-radius:999px;background:rgba(4,120,87,.12);color:var(--st-pos);font-size:10px;font-weight:600">'
+      + 'STR ' + (c.signal_strength||0).toFixed(1) + '</span>';
+    return '<div class="st-row" style="flex-wrap:wrap">'
+      + '<div class="st-row-tk">'+stEsc(c.ticker)+'</div>'
+      + '<div style="min-width:90px">'+badge+'</div>'
+      + '<div style="min-width:120px;color:var(--muted);font-size:11px">'+stEsc(screenLabel)+'</div>'
+      + '<div style="min-width:80px;font-family:JetBrains Mono,monospace;font-size:11px">$'+(c.price?Number(c.price).toFixed(2):'?')+'</div>'
+      + '<div style="min-width:90px;color:var(--muted);font-size:11px">'+stEsc(earnTxt)+'</div>'
+      + '<div style="flex:1;min-width:200px">'+reasons+'</div>'
+      + '</div>';
+  }, 'No new BUY candidates surfaced today.');
+}
+
+function stRenderDeferred() {
+  var items = stGetField('watch_tomorrow') || [];
+  document.getElementById('stanleyDeferredCount').textContent = items.length;
+  stRenderRowList('stanleyDeferred', items, function(w){
+    var act = String(w.action || '').toUpperCase();
+    var pill = '<span class="st-pill '+stPillClass(act)+'" style="font-size:10px">'+stEsc(act)+'</span>';
+    var qty = w.qty_shares != null ? w.qty_shares + ' sh' : '';
+    return '<div class="st-row">'
+      + '<div class="st-row-tk">'+stEsc(w.ticker)+'</div>'
+      + '<div style="min-width:90px">'+pill+(qty?' <span style="color:var(--muted);font-size:11px;margin-left:6px">'+qty+'</span>':'')+'</div>'
+      + '<div style="flex:1;color:var(--muted)">'+stEsc(w.reason || w.note || '')+'</div>'
+      + '</div>';
+  }, 'Nothing scheduled for tomorrow.');
+}
+
+function stRenderSuppressed() {
+  var items = stGetField('suppressed_cooldowns') || [];
+  document.getElementById('stanleySuppressedCount').textContent = items.length;
+  stRenderRowList('stanleySuppressed', items, function(s){
+    var act = String(s.original || s.action || '').toUpperCase();
+    var pill = '<span class="st-pill warn" style="font-size:10px">wanted to '+stEsc(act)+'</span>';
+    return '<div class="st-row">'
+      + '<div class="st-row-tk">'+stEsc(s.ticker)+'</div>'
+      + '<div style="min-width:140px">'+pill+'</div>'
+      + '<div style="flex:1"><div style="color:var(--text);font-size:12.5px">'+stEsc(s.explanation || s.reason || '')+'</div>'
+      + (s.reason && s.explanation ? '<div style="color:var(--muted);font-size:11px;margin-top:2px">'+stEsc(s.reason)+'</div>' : '')
+      + '</div>'
+      + '</div>';
+  }, 'Nothing suppressed today.');
+}
+
+function stRenderRejected() {
+  var items = stGetField('rejected_buys') || [];
+  document.getElementById('stanleyRejectedCount').textContent = items.length;
+  stRenderRowList('stanleyRejected', items, function(r){
+    var label = r.action_label || (r.action === 'NO_BUY' ? 'considered, skipped' : 'no recommendation');
+    return '<div class="st-row" style="flex-wrap:wrap">'
+      + '<div class="st-row-tk">'+stEsc(r.ticker)+'</div>'
+      + '<div style="min-width:160px"><span class="st-pill warn" style="font-size:10px">'+stEsc(label)+'</span></div>'
+      + '<div style="flex:1;min-width:240px"><div style="color:var(--text);font-size:12.5px">'+stEsc(r.reason_short || '')+'</div>'
+      + (r.reason_full && r.reason_full !== r.reason_short ? '<div style="color:var(--muted);font-size:11px;margin-top:4px;line-height:1.5">'+stEsc(r.reason_full).slice(0,400)+'</div>' : '')
+      + '</div>'
+      + '</div>';
+  }, 'No discovery candidates evaluated today.');
+}
+
+function stRenderHolds() {
+  var items = stGetField('holds') || [];
+  document.getElementById('stanleyHoldsCount').textContent = items.length;
+  stRenderRowList('stanleyHolds', items, function(h){
+    return '<div class="st-row">'
+      + '<div class="st-row-tk">'+stEsc(h.ticker)+'</div>'
+      + '<div style="min-width:90px"><span class="st-pill hold" style="font-size:10px">HOLD</span></div>'
+      + '<div style="flex:1;color:var(--muted)">'+stEsc(h.note || h.reason || '')+'</div>'
+      + '</div>';
+  }, 'No explicit holds today.');
+}
+
+// ---- Day Trade Hunter ----
+async function stDTRefresh() {
+  var box = document.getElementById('stanleyDTHunter');
+  box.innerHTML = '<div style="color:var(--muted);text-align:center;padding:18px">Scanning ~80 tickers for setups...</div>';
+  // expand the collapse if not already open so the user sees the result
+  var wrap = document.getElementById('stanleyDTHunterBox');
+  if (wrap && !wrap.classList.contains('open')) wrap.classList.add('open');
+  try {
+    var r = await fetch('/api/stanley/dt_scanner');
+    if (!r.ok) throw new Error('http ' + r.status);
+    var data = await r.json();
+    STANLEY.dtSetups = data;
+    stRenderDTHunter();
+    stToast('Scanned ' + (data.universe_size || 0) + ' tickers, found ' + ((data.setups || []).length) + ' setups', 'ok');
+  } catch (e) {
+    box.innerHTML = '<div style="color:var(--st-warn)">Scan failed: ' + stEsc(String(e)) + '</div>';
+  }
+}
+
+function stRenderDTHunter() {
+  var data = STANLEY.dtSetups || {};
+  var setups = data.setups || [];
+  var countEl = document.getElementById('stanleyDTCount');
+  if (countEl) countEl.textContent = setups.length;
+  var box = document.getElementById('stanleyDTHunter');
+  if (!box) return;
+  if (!setups.length) {
+    var note = data.note ? ' (' + stEsc(data.note) + ')' : '';
+    box.innerHTML = '<div style="color:var(--muted);text-align:center;padding:18px">No setups right now' + note + '. Click Scan now during market hours, or try again in a few minutes.</div>';
+    return;
+  }
+  box.innerHTML = setups.map(function(s){
+    var ind = s.indicators || {};
+    var tp = s.trade_plan || {};
+    var sz = s.sized_for_2500 || {};
+    var orderText = 'BUY ' + sz.shares + ' ' + s.ticker + ' MKT';
+    var stopOrderText = 'SELL ' + sz.shares + ' ' + s.ticker + ' STOP ' + tp.stop;
+    return '<div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px;margin-bottom:10px">'
+      + '<div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:8px">'
+      +   '<span style="background:rgba(4,120,87,.15);color:var(--st-pos);padding:3px 8px;border-radius:6px;font-size:11px;font-weight:700">SCORE ' + s.score + '</span>'
+      +   '<span style="font-weight:700;font-size:18px">' + stEsc(s.ticker) + '</span>'
+      +   '<span style="color:var(--muted);font-size:12px">$' + Number(s.last).toFixed(2) + '</span>'
+      +   '<span style="color:' + (s.day_chg_pct < 0 ? 'var(--st-neg)' : 'var(--st-pos)') + ';font-size:12px">' + (s.day_chg_pct >= 0 ? '+' : '') + Number(s.day_chg_pct).toFixed(1) + '%</span>'
+      +   '<span style="color:var(--muted);font-size:11px">vol ' + Number(s.vol_today_m||0).toFixed(0) + 'M</span>'
+      + '</div>'
+      + '<div style="font-size:12px;color:var(--text);margin-bottom:8px">' + stEsc(s.why || '') + '</div>'
+      + '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:8px;margin-bottom:10px;font-size:11px">'
+      +   '<div><span style="color:var(--muted)">1m RSI:</span> <b>' + Number(ind.rsi_1m).toFixed(0) + '</b> (min ' + Number(ind.rsi_1m_min_recent).toFixed(0) + ')</div>'
+      +   '<div><span style="color:var(--muted)">5m RSI:</span> <b>' + Number(ind.rsi_5m).toFixed(0) + '</b></div>'
+      +   '<div><span style="color:var(--muted)">5m MACD-h:</span> <b>' + Number(ind.macd_5m_hist).toFixed(4) + '</b></div>'
+      +   '<div><span style="color:var(--muted)">BB %B:</span> <b>' + Number(ind.bb_pct_b).toFixed(2) + '</b></div>'
+      +   '<div><span style="color:var(--muted)">BB:</span> ' + Number(ind.bb_lo).toFixed(2) + '/' + Number(ind.bb_mid).toFixed(2) + '/' + Number(ind.bb_up).toFixed(2) + '</div>'
+      +   '<div><span style="color:var(--muted)">spread:</span> ' + Number(s.spread_bps).toFixed(1) + 'bp</div>'
+      + '</div>'
+      + '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:6px;font-size:12px;background:var(--surface2);padding:8px;border-radius:6px;margin-bottom:8px">'
+      +   '<div><span style="color:var(--muted)">Entry:</span> <b>$' + Number(tp.entry_low).toFixed(2) + '-' + Number(tp.entry_high).toFixed(2) + '</b></div>'
+      +   '<div><span style="color:var(--muted)">Stop:</span> <b style="color:var(--st-neg)">$' + Number(tp.stop).toFixed(2) + '</b></div>'
+      +   '<div><span style="color:var(--muted)">T1:</span> <b style="color:var(--st-pos)">$' + Number(tp.t1).toFixed(2) + '</b> (+' + Number(tp.t1_pct).toFixed(1) + '%)</div>'
+      +   '<div><span style="color:var(--muted)">T2:</span> <b style="color:var(--st-pos)">$' + Number(tp.t2).toFixed(2) + '</b> (+' + Number(tp.t2_pct).toFixed(1) + '%)</div>'
+      +   '<div><span style="color:var(--muted)">T3:</span> <b style="color:var(--st-pos)">$' + Number(tp.t3).toFixed(2) + '</b></div>'
+      +   '<div><span style="color:var(--muted)">R:R T2:</span> <b>' + Number(tp.rr_t2).toFixed(1) + ':1</b></div>'
+      + '</div>'
+      + '<div style="font-size:12px;margin-bottom:8px">'
+      +   '<b>Sized for $2,500:</b> ' + sz.shares + ' shares = $' + Number(sz.cost_usd).toLocaleString() + ' &middot; max loss <span style="color:var(--st-neg)">-$' + Number(sz.max_loss).toFixed(0) + '</span> &middot; T2 reward <span style="color:var(--st-pos)">+$' + Number(sz.t2_reward).toFixed(0) + '</span>'
+      + '</div>'
+      + '<div style="display:flex;gap:6px;flex-wrap:wrap">'
+      +   '<button class="st-btn primary" onclick="stCopy(\'' + orderText + '\')">copy buy ticket</button>'
+      +   '<button class="st-btn" onclick="stCopy(\'' + stopOrderText + '\')">copy stop ticket</button>'
+      +   '<button class="st-btn" onclick="window.open(\'https://client.schwab.com/app/trade/tom/#/trade\',\'_blank\')">open Schwab</button>'
+      + '</div>'
+      + '</div>';
+  }).join('');
+}
+
+function stCopy(text) {
+  navigator.clipboard.writeText(text).then(function(){ stToast('copied: ' + text, 'ok'); },
+    function(){ stToast('copy failed', 'err'); });
+}
+
+async function stMarkExec(recJson, skipped) {
+  var r = JSON.parse(recJson);
+  var body = {
+    ticker: r.ticker, action: r.action, qty: r.qty_shares || r.qty || 0,
+    price_ref: r.price_ref || null, rec_date: STANLEY.recs && STANLEY.recs.date,
+    rec_id: r.rec_id || null, skipped: !!skipped, notes: '',
+  };
+  var res = await fetch('/api/stanley/executions', { method: 'POST',
+    headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+  if (res.ok) { stToast(skipped ? 'skip recorded' : 'execution recorded', 'ok'); }
+  else { stToast('failed to record', 'err'); }
+}
+
+async function stSnooze(ticker) {
+  var d = new Date(); d.setDate(d.getDate() + 7);
+  var until = d.toISOString().slice(0,10);
+  var res = await fetch('/api/stanley/overrides', { method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ ticker: ticker, action: 'SNOOZE', until: until, reason: 'manual' }) });
+  if (res.ok) { stToast(ticker + ' snoozed until ' + until, 'ok'); stanleyRefresh(); }
+  else { stToast('snooze failed', 'err'); }
+}
+
+function stRenderSnapshot() {
+  // prefer recs.portfolio_snapshot, fall back to sweep.portfolio_health
+  var snap = stGetField('portfolio_snapshot') || {};
+  var ph = (STANLEY.sweep && STANLEY.sweep.portfolio_health) || {};
+  function pick(a, b) { return a != null ? a : b; }
+  var totalVal = pick(snap.total_value_usd, ph.total_value_usd);
+  var cashPct = pick(snap.cash_pct, ph.cash_pct);
+  var margin = pick(snap.margin_debt_usd, ph.margin_debt_usd);
+  var techPct = pick(snap.tech_pct_lookthrough, ph.tech_pct_lookthrough);
+  var effN = pick(snap.effective_n, ph.effective_n);
+  var top = snap.top_concentration || {};
+  var top1Pct = pick(top.pct, ph.top1_concentration_pct);
+  var top1Ticker = pick(top.ticker, ph.top1_concentration_ticker);
+
+  document.getElementById('stanleyPortfolioValue').textContent = stFmt$(totalVal);
+  document.getElementById('stanleyPositionCount').textContent = (snap.position_count || ph.position_count || 0) + ' positions';
+
+  document.getElementById('stanleyCashPct').textContent = stFmtPct(cashPct, 1);
+
+  var marginEl = document.getElementById('stanleyMargin');
+  marginEl.textContent = stFmt$(margin);
+  marginEl.style.color = (margin > 0) ? 'var(--st-neg)' : 'var(--st-pos)';
+  document.getElementById('stanleyMarginNote').textContent = margin > 0 ? 'pay down asap' : 'target $0';
+
+  // Effective N traffic light: <3 red, 3-5 amber, >=5 green
+  var effEl = document.getElementById('stanleyEffN');
+  var effNote = document.getElementById('stanleyEffNNote');
+  if (effN != null) {
+    effEl.textContent = Number(effN).toFixed(2);
+    if (effN < 3) { effEl.style.color = 'var(--st-neg)'; effNote.textContent = 'too concentrated'; }
+    else if (effN < 5) { effEl.style.color = 'var(--st-warn)'; effNote.textContent = 'a bit narrow'; }
+    else { effEl.style.color = 'var(--st-pos)'; effNote.textContent = 'healthy spread'; }
+  } else { effEl.textContent = '-'; effEl.style.color = 'var(--text)'; effNote.textContent = 'independent bets'; }
+
+  // Tech traffic light: >35 red, 25-35 amber, <25 green
+  var techEl = document.getElementById('stanleyTechPct');
+  var techNote = document.getElementById('stanleyTechPctNote');
+  if (techPct != null) {
+    techEl.textContent = stFmtPct(techPct, 1);
+    if (techPct > 35) { techEl.style.color = 'var(--st-neg)'; techNote.textContent = 'too tech-heavy'; }
+    else if (techPct > 25) { techEl.style.color = 'var(--st-warn)'; techNote.textContent = 'getting heavy'; }
+    else { techEl.style.color = 'var(--st-pos)'; techNote.textContent = 'balanced'; }
+  } else { techEl.textContent = '-'; techEl.style.color = 'var(--text)'; techNote.textContent = 'incl. ETFs'; }
+
+  // Top position
+  var topEl = document.getElementById('stanleyTop1');
+  topEl.textContent = stFmtPct(top1Pct, 1);
+  if (top1Pct != null && top1Pct > 10) topEl.style.color = 'var(--st-neg)';
+  else if (top1Pct != null && top1Pct > 8) topEl.style.color = 'var(--st-warn)';
+  else topEl.style.color = 'var(--text)';
+  document.getElementById('stanleyTop1Note').textContent = (top1Ticker || '-') + '  ·  cap 10%';
+}
+
+function stRenderTasks() {
+  var box = document.getElementById('stanleyTasks');
+  var tasks = (STANLEY.tasks && STANLEY.tasks.tasks) || [];
+  if (!tasks.length) {
+    box.innerHTML = '<div style="color:var(--muted);font-size:12px;font-style:italic">No tasks registered. Run scripts/register-tasks.cmd.</div>';
+    return;
+  }
+  box.innerHTML = '<div style="display:grid;grid-template-columns:1.4fr 1fr 1fr 0.8fr auto;gap:10px;font-size:11px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.06em;padding:4px 0;border-bottom:1px solid var(--border)">'
+    + '<div>Task</div><div>Last run</div><div>Next run</div><div>Status</div><div>Actions</div></div>'
+    + tasks.map(function(t){
+      var enabled = t.status !== 'Disabled' && t.enabled !== false;
+      var lastResult = t.last_result || t.last_exit_code;
+      var resultColor = (lastResult === 0 || lastResult === '0' || lastResult === 'OK') ? 'var(--st-pos)'
+        : (lastResult == null || lastResult === '') ? 'var(--muted)' : 'var(--st-neg)';
+      return '<div style="display:grid;grid-template-columns:1.4fr 1fr 1fr 0.8fr auto;gap:10px;align-items:center;padding:8px 0;border-bottom:1px solid var(--border);font-size:12px">'
+        + '<div><div style="font-weight:600">'+stEsc(t.name||'')+'</div><div style="font-size:10px;color:var(--muted)">'+stEsc(t.schedule||'')+'</div></div>'
+        + '<div style="font-family:JetBrains Mono,monospace;font-size:11px">'+stEsc(t.last_run||'-')+'</div>'
+        + '<div style="font-family:JetBrains Mono,monospace;font-size:11px">'+stEsc(t.next_run||'-')+'</div>'
+        + '<div><span style="color:'+resultColor+';font-size:11px">●</span> '+stEsc(t.status||(enabled?'Ready':'Disabled'))+'</div>'
+        + '<div style="display:flex;gap:6px;align-items:center">'
+        +   '<label class="st-toggle"><input type="checkbox" '+(enabled?'checked':'')+' onchange="stToggleTask(\''+stEsc(t.name)+'\', this.checked)"><span class="sl"></span></label>'
+        +   '<button class="st-btn" onclick="stRunTask(\''+stEsc(t.name)+'\')">run now</button>'
+        + '</div>'
+        + '</div>';
+    }).join('');
+}
+
+async function stToggleTask(name, on) {
+  var op = on ? 'enable' : 'disable';
+  var res = await fetch('/api/stanley/tasks/'+encodeURIComponent(name)+'/'+op, { method: 'POST' });
+  if (res.ok) { stToast(name + ' ' + op + 'd', 'ok'); setTimeout(stanleyRefresh, 600); }
+  else { stToast('toggle failed', 'err'); }
+}
+async function stRunTask(name) {
+  stToast('triggering ' + name + '...', 'ok');
+  var res = await fetch('/api/stanley/tasks/'+encodeURIComponent(name)+'/run', { method: 'POST' });
+  if (res.ok) { stToast(name + ' triggered', 'ok'); setTimeout(stanleyRefresh, 1500); }
+  else { stToast('run failed', 'err'); }
+}
+
+function stRenderMacro() {
+  var m = STANLEY.macro || {};
+  var regime = m.regime || 'unknown';
+  var label = String(regime).toLowerCase();
+  document.getElementById('stanleyMacroLabel').textContent = label;
+  // needle position by regime
+  var pos = label.indexOf('off') >= 0 ? 84 : label.indexOf('on') >= 0 ? 16 : 50;
+  document.getElementById('stanleyMacroNeedle').style.left = pos + '%';
+  var detail = document.getElementById('stanleyMacroDetail');
+  var series = m.series || [];
+  if (!series.length) { detail.innerHTML = '<span style="color:var(--muted)">no series loaded</span>'; return; }
+  detail.innerHTML = series.map(function(s){
+    var trig = s.triggered ? 'var(--st-warn)' : 'var(--muted)';
+    return '<div style="display:flex;justify-content:space-between"><span style="color:'+trig+'">'
+      + (s.triggered?'⚠':'·')+' '+stEsc(s.id||'')+'</span>'
+      + '<span style="font-family:JetBrains Mono,monospace">'+stEsc(s.value!=null?s.value:'-')+'</span></div>';
+  }).join('');
+}
+
+function stRenderConcentration() {
+  var conc = (STANLEY.sweep && STANLEY.sweep.concentration) || {};
+  var lt = conc.lookthrough_top5 || conc.by_underlying || [];
+  var box = document.getElementById('stanleyLookthrough');
+  if (!lt.length) { box.innerHTML = '<div style="color:var(--muted);font-style:italic">no lookthrough data</div>'; return; }
+  var maxPct = Math.max.apply(null, lt.map(function(x){ return x.pct || x.pct_of_portfolio || 0; }));
+  box.innerHTML = lt.slice(0,5).map(function(x){
+    var pct = x.pct != null ? x.pct : x.pct_of_portfolio;
+    var w = maxPct > 0 ? (pct / maxPct * 100) : 0;
+    return '<div>'
+      + '<div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:2px">'
+      +   '<span style="font-weight:600">'+stEsc(x.ticker||x.underlying||'-')+'</span>'
+      +   '<span>'+stFmtPct(pct,1)+'</span></div>'
+      + '<div style="height:5px;background:var(--surface);border-radius:3px;overflow:hidden">'
+      +   '<div style="height:100%;background:var(--accent);width:'+w.toFixed(1)+'%"></div></div>'
+      + '</div>';
+  }).join('');
+}
+
+function stRenderGrid() {
+  var results = ((STANLEY.sweep || {}).results || []).filter(function(r){ return r.position; });
+  var rows = results.map(function(r){
+    var pos = r.position || {};
+    var snap = r.snapshot || {};
+    return {
+      ticker: r.ticker,
+      rec: (r.recommended_action || r.action || '').toUpperCase() || '-',
+      score: r.attention_score || 0,
+      mv: pos.market_value || 0,
+      day: snap.chg_1d_pct != null ? snap.chg_1d_pct : (pos.day_change_pct || 0),
+      rs: r.rs_rank_vs_spy != null ? r.rs_rank_vs_spy : -1,
+      ltcg: r.holding_days != null ? Math.max(0, 365 - r.holding_days) : -1,
+      spark: snap.spark_60d || [],
+    };
+  });
+  if (STANLEY.filter) {
+    var f = STANLEY.filter.toUpperCase();
+    rows = rows.filter(function(r){ return r.ticker.toUpperCase().indexOf(f) >= 0; });
+  }
+  rows.sort(function(a,b){
+    var k = STANLEY.sortKey, dir = STANLEY.sortDir;
+    var av = a[k], bv = b[k];
+    if (typeof av === 'string') return dir * av.localeCompare(bv);
+    return dir * ((av||0) - (bv||0));
+  });
+  var body = document.getElementById('stanleyGridBody');
+  if (!rows.length) {
+    body.innerHTML = '<tr><td colspan="8" style="text-align:center;color:var(--muted);padding:20px;font-style:italic">No holdings in sweep yet.</td></tr>';
+    return;
+  }
+  body.innerHTML = rows.map(function(r){
+    var recCls = /BUY|ADD/.test(r.rec) ? 'buy' : /SELL|TRIM/.test(r.rec) ? 'sell' : 'hold';
+    var dayColor = r.day >= 0 ? 'var(--st-pos)' : 'var(--st-neg)';
+    var rsColor = r.rs >= 70 ? 'var(--st-pos)' : r.rs >= 0 && r.rs < 30 ? 'var(--st-neg)' : 'var(--text)';
+    var ltcgColor = r.ltcg > 0 && r.ltcg < 30 ? 'var(--st-warn)' : 'var(--text)';
+    return '<tr>'
+      + '<td style="font-weight:600">'+stEsc(r.ticker)+'</td>'
+      + '<td><span class="st-pill '+recCls+'">'+stEsc(r.rec)+'</span></td>'
+      + '<td style="font-family:JetBrains Mono,monospace">'+(r.score||0)+'</td>'
+      + '<td style="font-family:JetBrains Mono,monospace">'+stFmt$(r.mv)+'</td>'
+      + '<td style="font-family:JetBrains Mono,monospace;color:'+dayColor+'">'+(r.day>0?'+':'')+r.day.toFixed(2)+'%</td>'
+      + '<td style="font-family:JetBrains Mono,monospace;color:'+rsColor+'">'+(r.rs<0?'-':r.rs)+'</td>'
+      + '<td style="font-family:JetBrains Mono,monospace;color:'+ltcgColor+'">'+(r.ltcg<0?'-':r.ltcg)+'</td>'
+      + '<td>'+(r.spark.length?stSpark(r.spark, 80, 22, dayColor):'-')+'</td>'
+      + '</tr>';
+  }).join('');
+}
+
+function stRenderRecents() {
+  var list = (STANLEY.recentsList && STANLEY.recentsList.list) || [];
+  var box = document.getElementById('stanleyRecents');
+  if (!list.length) { box.innerHTML = '<div style="color:var(--muted);font-style:italic">no history yet</div>'; return; }
+  box.innerHTML = '<table style="width:100%;font-size:11px;border-collapse:collapse">'
+    + list.map(function(d){
+      return '<tr style="border-bottom:1px solid var(--border)">'
+        + '<td style="padding:6px 4px;font-family:JetBrains Mono,monospace">'+stEsc(d.date)+'</td>'
+        + '<td style="padding:6px 4px;color:var(--muted);max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="'+stEsc(d.verdict||'')+'">'+stEsc(d.verdict||'-')+'</td>'
+        + '<td style="padding:6px 4px;text-align:right"><span style="color:var(--st-pos)">'+(d.buys||0)+'B</span> · <span style="color:var(--st-neg)">'+(d.sells||0)+'S</span></td>'
+        + '</tr>';
+    }).join('') + '</table>';
+}
+
+function stRenderSycophancy() {
+  var s = STANLEY.sycophancy || {};
+  var hr = STANLEY.hitRate || {};
+  var findings = s.findings || [];
+  var box = document.getElementById('stanleySycophancy');
+  var html = '';
+  if (hr.executed != null || hr.skipped != null) {
+    html += '<div style="margin-bottom:8px;font-size:12px"><b>Follow-through (90d):</b> '
+      + (hr.follow_through_pct != null ? hr.follow_through_pct + '%' : '-')
+      + ' <span style="color:var(--muted)">(' + (hr.executed||0) + ' done / ' + (hr.skipped||0) + ' skipped)</span></div>';
+  }
+  if (!findings.length) {
+    html += '<div style="color:var(--muted);font-size:12px;font-style:italic">'+(s.status === 'never_run' ? 'never run' : 'no flags - calibrated')+'</div>';
+  } else {
+    html += findings.map(function(f){
+      return '<div style="font-size:12px;margin:4px 0;padding:6px 8px;background:var(--surface);border-left:3px solid var(--st-warn);border-radius:4px">'
+        + '<b>'+stEsc(f.code||'flag')+'</b>: '+stEsc(f.message||'')+'</div>';
+    }).join('');
+  }
+  box.innerHTML = html;
+}
+
+function stRenderIncidents() {
+  var inc = (STANLEY.incidents && STANLEY.incidents.incidents) || [];
+  var box = document.getElementById('stanleyIncidents');
+  var badge = document.getElementById('stanleyIncidentsBadge');
+  // count last 24h
+  var cutoff = Date.now() - 86400000;
+  var recent = inc.filter(function(i){ try { return new Date(i.ts).getTime() >= cutoff; } catch { return false; } });
+  if (recent.length) { badge.style.display = 'inline-block'; badge.textContent = recent.length; }
+  else { badge.style.display = 'none'; }
+  if (!inc.length) { box.innerHTML = '<div style="color:var(--muted);font-style:italic">clean</div>'; return; }
+  box.innerHTML = inc.slice(0,50).map(function(i){
+    return '<div style="padding:4px 0;border-bottom:1px solid var(--border)">'
+      + '<span style="color:var(--muted)">'+stEsc((i.ts||'').slice(0,16))+'</span> '
+      + '<span style="color:var(--st-warn)">['+stEsc(i.kind||i.type||'?')+']</span> '
+      + stEsc(i.message||i.detail||i.raw||'')
+      + '</div>';
+  }).join('');
+}
+
+// header sort clicks
+document.addEventListener('click', function(e){
+  var th = e.target.closest('#stanleyGrid th[data-sort]');
+  if (!th) return;
+  var k = th.getAttribute('data-sort');
+  if (STANLEY.sortKey === k) STANLEY.sortDir = -STANLEY.sortDir;
+  else { STANLEY.sortKey = k; STANLEY.sortDir = th.hasAttribute('data-num') ? -1 : 1; }
+  stRenderGrid();
+});
+
+// filter input
+document.addEventListener('input', function(e){
+  if (e.target && e.target.id === 'stanleyFilter') {
+    STANLEY.filter = e.target.value || '';
+    stRenderGrid();
+  }
+});
+
+// keyboard shortcuts
+document.addEventListener('keydown', function(e){
+  if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+  var panel = document.getElementById('panel-stanley');
+  if (!panel || panel.style.display === 'none') return;
+  if (e.key === 'r') { e.preventDefault(); stanleyRefresh(); stToast('refreshing', 'ok'); }
+  else if (e.key === '?') { e.preventDefault(); stanleyHelp(); }
+  else if (e.key === 'Escape') { var m = document.getElementById('stanleyHelpModal'); if (m && m.classList.contains('open')) m.classList.remove('open'); }
+  else if (e.key === '/') { e.preventDefault(); var f=document.getElementById('stanleyFilter'); if(f)f.focus(); }
+});
+
+function stanleyHelp() {
+  var m = document.getElementById('stanleyHelpModal');
+  if (m) m.classList.toggle('open');
+}
+
+// auto-refresh when stanley tab is active
+(function(){
+  var interval = null;
+  document.addEventListener('click', function(e){
+    var t = e.target.closest('.tab');
+    if (t && t.getAttribute('data-tab') === 'stanley') {
+      stanleyRefresh();
+      if (!interval) interval = setInterval(stanleyRefresh, 60000);
+    } else if (interval && t) { clearInterval(interval); interval = null; }
+  });
+  setTimeout(stanleyRefresh, 800);
+})();
+</script>
+
+<!-- ============ CREED (PC HEALTH) ============ -->
+<div class="panel" id="panel-creed">
+  <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:12px;gap:14px;flex-wrap:wrap">
+    <div>
+      <div style="font-size:20px;font-weight:700;letter-spacing:.3px">Creed</div>
+      <div style="font-size:11px;color:var(--muted);margin-top:2px" id="creedSubtitle">"I have been watching. Don't worry about it."</div>
+    </div>
+    <div style="display:flex;gap:8px;align-items:center;font-size:11px;color:var(--muted)">
+      <button onclick="creedAction('run-audit')" style="padding:7px 12px;background:var(--accent-dim);color:var(--accent);border:1px solid var(--border);border-radius:6px;cursor:pointer;font-size:11px;font-family:'JetBrains Mono',monospace">Run full audit now</button>
+      <button onclick="creedSetBaseline()" title="Pin current metrics as the 'before cleanup' baseline so impact can be measured" style="padding:7px 12px;background:var(--surface2);color:var(--text);border:1px solid var(--border);border-radius:6px;cursor:pointer;font-size:11px;font-family:'JetBrains Mono',monospace">Pin baseline</button>
+      <button onclick="creedAction('disk-suggest')" style="padding:7px 12px;background:var(--surface2);color:var(--text);border:1px solid var(--border);border-radius:6px;cursor:pointer;font-size:11px;font-family:'JetBrains Mono',monospace">Disk cleanup suggestions</button>
+      <button onclick="creedFetch()" style="padding:7px 12px;background:var(--surface2);color:var(--text);border:1px solid var(--border);border-radius:6px;cursor:pointer;font-size:11px;font-family:'JetBrains Mono',monospace">Refresh</button>
+    </div>
+  </div>
+
+  <!-- HERO score + live metrics -->
+  <div style="display:grid;grid-template-columns:280px 1fr;gap:12px;margin-bottom:12px">
+    <div class="card" id="creedHero" style="display:flex;flex-direction:column;align-items:center;justify-content:center;padding:18px;text-align:center">
+      <div style="font-size:9px;color:var(--muted);letter-spacing:2px;margin-bottom:6px;font-family:'JetBrains Mono',monospace">SYSTEM HEALTH</div>
+      <div id="creedScore" style="font-size:64px;font-weight:800;line-height:1;color:var(--accent)">--</div>
+      <div style="font-size:10px;color:var(--muted);margin-top:6px" id="creedScoreLabel">awaiting first sample</div>
+      <div style="font-size:10px;color:var(--muted);margin-top:10px;font-family:'JetBrains Mono',monospace" id="creedLastSeen">last check: -</div>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:8px">
+      <div class="card" style="padding:12px"><div style="font-size:9px;color:var(--muted);letter-spacing:1px;margin-bottom:4px">CPU</div><div style="font-size:22px;font-weight:700" id="creedCpu">-</div><div style="font-size:9px;color:var(--muted)" id="creedCpuLabel">load</div></div>
+      <div class="card" style="padding:12px"><div style="font-size:9px;color:var(--muted);letter-spacing:1px;margin-bottom:4px">RAM</div><div style="font-size:22px;font-weight:700" id="creedRam">-</div><div style="font-size:9px;color:var(--muted)" id="creedRamLabel">used</div></div>
+      <div class="card" style="padding:12px"><div style="font-size:9px;color:var(--muted);letter-spacing:1px;margin-bottom:4px">DISK C:</div><div style="font-size:22px;font-weight:700" id="creedDisk">-</div><div style="font-size:9px;color:var(--muted)" id="creedDiskLabel">free</div></div>
+      <div class="card" style="padding:12px"><div style="font-size:9px;color:var(--muted);letter-spacing:1px;margin-bottom:4px">NETWORK</div><div style="font-size:13px;font-weight:700;line-height:1.3" id="creedNet">- / -</div><div style="font-size:9px;color:var(--muted)">down / up Mbps</div></div>
+      <div class="card" style="padding:12px"><div style="font-size:9px;color:var(--muted);letter-spacing:1px;margin-bottom:4px">UPTIME</div><div style="font-size:22px;font-weight:700" id="creedUptime">-</div><div style="font-size:9px;color:var(--muted)">days</div></div>
+    </div>
+  </div>
+
+  <!-- Security + Network + VMs row -->
+  <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:12px">
+    <div class="card" style="padding:14px">
+      <div style="font-size:9px;color:var(--muted);letter-spacing:2px;margin-bottom:8px;font-family:'JetBrains Mono',monospace">SECURITY</div>
+      <div id="creedSecurity" style="display:flex;flex-direction:column;gap:6px;font-size:12px"></div>
+    </div>
+    <div class="card" style="padding:14px">
+      <div style="font-size:9px;color:var(--muted);letter-spacing:2px;margin-bottom:8px;font-family:'JetBrains Mono',monospace">NETWORK</div>
+      <div id="creedNetBlock" style="display:flex;flex-direction:column;gap:6px;font-size:12px"></div>
+    </div>
+    <div class="card" style="padding:14px">
+      <div style="font-size:9px;color:var(--muted);letter-spacing:2px;margin-bottom:8px;font-family:'JetBrains Mono',monospace">VIRTUAL MACHINES</div>
+      <div id="creedVms" style="display:flex;flex-direction:column;gap:6px;font-size:12px;color:var(--muted)">No VMs detected.</div>
+    </div>
+  </div>
+
+  <!-- Alerts + Top processes row -->
+  <div style="display:grid;grid-template-columns:1.2fr 1fr;gap:12px;margin-bottom:12px">
+    <div class="card" style="padding:14px">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+        <div style="font-size:9px;color:var(--muted);letter-spacing:2px;font-family:'JetBrains Mono',monospace">ALERTS</div>
+        <div style="font-size:10px;color:var(--muted)" id="creedAlertCount">0 active</div>
+      </div>
+      <div id="creedAlerts" style="max-height:280px;overflow-y:auto;display:flex;flex-direction:column;gap:6px;font-size:12px">
+        <div style="color:var(--muted);font-style:italic">Creed: It's quiet. Almost too quiet.</div>
+      </div>
+    </div>
+    <div class="card" style="padding:14px">
+      <div style="font-size:9px;color:var(--muted);letter-spacing:2px;margin-bottom:8px;font-family:'JetBrains Mono',monospace">TOP PROCESSES</div>
+      <div id="creedProcs" style="font-size:11px;font-family:'JetBrains Mono',monospace"></div>
+    </div>
+  </div>
+
+  <!-- Impact (baseline vs now) -->
+  <div class="card" style="padding:14px;margin-bottom:12px">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+      <div style="font-size:9px;color:var(--muted);letter-spacing:2px;font-family:'JetBrains Mono',monospace">IMPACT - BEFORE VS NOW</div>
+      <div style="font-size:10px;color:var(--muted)" id="creedImpactMeta">no baseline pinned</div>
+    </div>
+    <div id="creedImpact" style="display:grid;grid-template-columns:repeat(5,1fr);gap:8px;font-size:11px">
+      <div style="color:var(--muted);font-style:italic;grid-column:1/-1">Click "Pin baseline" above to snapshot current metrics. After you complete approved actions, this block shows deltas.</div>
+    </div>
+  </div>
+
+  <!-- Approved queue -->
+  <div class="card" style="padding:14px;margin-bottom:12px">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+      <div style="font-size:9px;color:var(--muted);letter-spacing:2px;font-family:'JetBrains Mono',monospace">APPROVED QUEUE</div>
+      <div style="font-size:10px;color:var(--muted)" id="creedPendingCount">0 waiting for you to do</div>
+    </div>
+    <div id="creedPending" style="display:flex;flex-direction:column;gap:6px;font-size:12px;max-height:240px;overflow-y:auto">
+      <div style="color:var(--muted);font-style:italic">Approved proposals land here. Click MARK COMPLETE after you've done the change.</div>
+    </div>
+  </div>
+
+  <!-- Completed archive -->
+  <div class="card" style="padding:14px;margin-bottom:12px">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+      <div style="font-size:9px;color:var(--muted);letter-spacing:2px;font-family:'JetBrains Mono',monospace">COMPLETED ARCHIVE</div>
+      <div style="font-size:10px;color:var(--muted)" id="creedCompletedCount">0 done</div>
+    </div>
+    <div id="creedCompleted" style="display:flex;flex-direction:column;gap:4px;font-size:11px;max-height:240px;overflow-y:auto;font-family:'JetBrains Mono',monospace">
+      <div style="color:var(--muted);font-style:italic">Nothing archived yet.</div>
+    </div>
+  </div>
+
+  <!-- Recommendations -->
+  <div class="card" style="padding:14px;margin-bottom:12px">
+    <div style="font-size:9px;color:var(--muted);letter-spacing:2px;margin-bottom:8px;font-family:'JetBrains Mono',monospace">CREED'S RECOMMENDATIONS</div>
+    <div id="creedRecs" style="font-size:12px;line-height:1.6">
+      <div style="color:var(--muted);font-style:italic">Creed: Run a full audit when you have a minute and I'll tell you what I think.</div>
+    </div>
+  </div>
+
+  <!-- Latest audit summary -->
+  <div class="card" style="padding:14px">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+      <div style="font-size:9px;color:var(--muted);letter-spacing:2px;font-family:'JetBrains Mono',monospace">LATEST AUDIT</div>
+      <div style="font-size:10px;color:var(--muted)" id="creedAuditMeta">-</div>
+    </div>
+    <pre id="creedAuditMd" style="white-space:pre-wrap;font-size:11px;line-height:1.55;max-height:340px;overflow-y:auto;background:var(--surface2);padding:10px;border-radius:6px;border:1px solid var(--border);color:var(--text);font-family:'JetBrains Mono',monospace">No audit yet. Click "Run full audit now" to generate one.</pre>
+  </div>
+
+  <div class="panel-footer" style="margin-top:12px"><span>Creed is watching. Last update: <span id="creedFooterTs">-</span></span><span>Audit runs nightly at 3am.</span></div>
+</div>
+
+<script>
+// ============ CREED ============
+window.CREED = { lastFetch: 0, data: null };
+
+function creedFmtAgo(iso) {
+  if (!iso) return '-';
+  try {
+    var d = new Date(iso);
+    var s = Math.floor((Date.now() - d.getTime()) / 1000);
+    if (s < 60) return s + 's ago';
+    if (s < 3600) return Math.floor(s/60) + 'm ago';
+    if (s < 86400) return Math.floor(s/3600) + 'h ago';
+    return Math.floor(s/86400) + 'd ago';
+  } catch { return '-'; }
+}
+
+function creedScoreColor(s) {
+  if (s == null) return 'var(--muted)';
+  if (s >= 85) return 'var(--mint, #4fd1c5)';
+  if (s >= 65) return 'var(--gold, #fbbf24)';
+  return 'var(--coral, #fc8181)';
+}
+
+function creedRender(payload) {
+  if (!payload) return;
+  var s = payload.status || {};
+  var alerts = payload.alerts || [];
+  var audit = payload.audit;
+
+  // hero
+  var score = s.health_score != null ? s.health_score : (audit && audit.health_score);
+  var scoreEl = document.getElementById('creedScore');
+  var labelEl = document.getElementById('creedScoreLabel');
+  var badgeEl = document.getElementById('creedScoreBadge');
+  if (score != null) {
+    scoreEl.textContent = score;
+    scoreEl.style.color = creedScoreColor(score);
+    labelEl.textContent = score >= 85 ? 'healthy' : score >= 65 ? 'okay' : 'needs attention';
+    if (badgeEl) { badgeEl.textContent = score; badgeEl.style.color = creedScoreColor(score); }
+  }
+  document.getElementById('creedLastSeen').textContent = 'last check: ' + creedFmtAgo(s.last_seen);
+  document.getElementById('creedFooterTs').textContent = creedFmtAgo(s.last_seen);
+
+  // live metrics
+  document.getElementById('creedCpu').textContent = (s.cpu_pct != null ? s.cpu_pct + '%' : '-');
+  document.getElementById('creedRam').textContent = (s.ram_pct != null ? s.ram_pct + '%' : '-');
+  document.getElementById('creedRamLabel').textContent = (s.ram_used_gb != null ? s.ram_used_gb + ' / ' + s.ram_total_gb + ' GB' : 'used');
+  document.getElementById('creedDisk').textContent = (s.disk_c_free_pct != null ? s.disk_c_free_pct + '%' : '-');
+  document.getElementById('creedDiskLabel').textContent = (s.disk_c_free_gb != null ? s.disk_c_free_gb + ' GB free' : 'free');
+  document.getElementById('creedNet').textContent = (s.net_down_mbps != null ? s.net_down_mbps + ' / ' + s.net_up_mbps : '- / -');
+  document.getElementById('creedUptime').textContent = (s.uptime_days != null ? s.uptime_days : '-');
+
+  // security
+  var sec = document.getElementById('creedSecurity');
+  function row(label, ok, detail) {
+    var icon = ok === true ? '<span style="color:var(--mint, #4fd1c5)">[OK]</span>' :
+               ok === false ? '<span style="color:var(--coral, #fc8181)">[!!]</span>' :
+               '<span style="color:var(--muted)">[--]</span>';
+    return '<div style="display:flex;justify-content:space-between"><span>' + icon + ' ' + label + '</span><span style="color:var(--muted);font-size:11px">' + (detail||'') + '</span></div>';
+  }
+  var fwOn = audit && audit.firewall && audit.firewall.every && audit.firewall.every(function(p){ return p.Enabled; });
+  var blAny = audit && audit.bitlocker && audit.bitlocker.length > 0;
+  sec.innerHTML = row('Defender real-time', s.defender_active === true ? true : s.defender_active === false ? false : null, s.defender_signature_age_hours != null ? 'sig ' + s.defender_signature_age_hours + 'h old' : '')
+    + row('Firewall', fwOn === true ? true : fwOn === false ? false : null, audit && audit.firewall ? audit.firewall.length + ' profiles' : '')
+    + row('BitLocker', blAny ? true : null, audit && audit.bitlocker ? audit.bitlocker.length + ' volume(s)' : '')
+    + row('VPN', s.vpn_connected === true ? true : null, s.vpn_connected ? 'connected' : 'not connected');
+
+  // network block
+  var nb = document.getElementById('creedNetBlock');
+  nb.innerHTML = '';
+  if (s.wifi_ssid) {
+    var sig = s.wifi_signal_pct || 0;
+    var bar = '<div style="background:var(--surface2);height:6px;border-radius:3px;width:80px;overflow:hidden"><div style="height:100%;background:' + (sig > 60 ? 'var(--mint, #4fd1c5)' : sig > 30 ? 'var(--gold, #fbbf24)' : 'var(--coral, #fc8181)') + ';width:' + sig + '%"></div></div>';
+    nb.innerHTML += '<div style="display:flex;justify-content:space-between;align-items:center"><span>WiFi</span><span style="display:flex;gap:8px;align-items:center"><span style="color:var(--muted);font-size:11px">' + s.wifi_ssid + '</span>' + bar + '</span></div>';
+  }
+  nb.innerHTML += '<div style="display:flex;justify-content:space-between"><span>Down</span><span style="color:var(--muted)">' + (s.net_down_mbps || 0) + ' Mbps</span></div>';
+  nb.innerHTML += '<div style="display:flex;justify-content:space-between"><span>Up</span><span style="color:var(--muted)">' + (s.net_up_mbps || 0) + ' Mbps</span></div>';
+
+  // vms
+  var vmEl = document.getElementById('creedVms');
+  if (s.vms_running && s.vms_running.length) {
+    vmEl.innerHTML = s.vms_running.map(function(v){
+      return '<div style="display:flex;justify-content:space-between"><span>' + v.type + ': ' + v.name + '</span><span style="color:var(--mint, #4fd1c5)">' + v.state + '</span></div>';
+    }).join('');
+  } else {
+    vmEl.innerHTML = '<span style="color:var(--muted);font-style:italic">Creed: No VMs running. Quiet day.</span>';
+  }
+
+  // alerts
+  var aEl = document.getElementById('creedAlerts');
+  // Hide manual_review proposals entirely from the main list - they have no concrete action
+  // and clutter the actionable queue. They defeat Creed's "decide for me" purpose.
+  // (They still stay in alerts.jsonl in case we want them back later.)
+  var filteredAlerts = alerts.filter(function(a){
+    var act = a.proposed_action || a.action;
+    return act !== 'manual_review';
+  });
+  var active = filteredAlerts.filter(function(a){ return !a.dismissed; });
+  var hiddenManualReview = alerts.filter(function(a){
+    var act = a.proposed_action || a.action;
+    return act === 'manual_review' && !a.dismissed;
+  }).length;
+  var countLabel = active.length + ' active';
+  if (hiddenManualReview) countLabel += ' (' + hiddenManualReview + ' low-signal hidden)';
+  document.getElementById('creedAlertCount').textContent = countLabel;
+  if (filteredAlerts.length === 0) {
+    aEl.innerHTML = '<div style="color:var(--muted);font-style:italic">Creed: It\'s quiet. Almost too quiet.</div>';
+  } else {
+    // sort: active cleanup_proposals first, then other active, then dismissed
+    var sorted = filteredAlerts.slice().sort(function(a,b){
+      var aw = (!a.dismissed && a.kind === 'cleanup_proposal') ? 0 : (!a.dismissed ? 1 : 2);
+      var bw = (!b.dismissed && b.kind === 'cleanup_proposal') ? 0 : (!b.dismissed ? 1 : 2);
+      return aw - bw;
+    });
+    aEl.innerHTML = sorted.slice(0, 50).map(function(a){
+      var lvl = a.level || 'info';
+      var color = lvl === 'crit' ? 'var(--coral, #fc8181)' : lvl === 'warn' ? 'var(--gold, #fbbf24)' : 'var(--mint, #4fd1c5)';
+      var op = a.dismissed ? '0.45' : '1';
+      var isProposal = a.kind === 'cleanup_proposal' && !a.dismissed;
+      var actDesc = creedActionDescribe(a.proposed_action);
+      var actionLine = a.proposed_action ? '<span title="' + actDesc.replace(/"/g,'&quot;') + '" style="background:var(--surface);border:1px solid var(--border);color:var(--muted);font-size:8px;letter-spacing:1px;padding:1px 5px;border-radius:3px;margin-left:6px;text-transform:uppercase;cursor:help">' + a.proposed_action + '</span>' : '';
+      var decisionBadge = a.decision ? '<span style="font-size:8px;letter-spacing:1px;padding:1px 5px;border-radius:3px;margin-left:6px;text-transform:uppercase;background:' + (a.decision === 'approved' ? 'rgba(79,209,197,0.15);color:var(--mint,#4fd1c5)' : 'rgba(252,129,129,0.15);color:var(--coral,#fc8181)') + '">' + a.decision + '</span>' : '';
+      var buttons;
+      if (a.dismissed) {
+        buttons = '';
+      } else if (isProposal) {
+        buttons = '<div style="display:flex;gap:4px;flex-shrink:0" onclick="event.stopPropagation()">'
+          + '<button onclick="creedApprove(\'' + a.id + '\')" style="background:var(--accent-dim);border:1px solid var(--accent);color:var(--accent);font-size:9px;padding:3px 8px;border-radius:4px;cursor:pointer;font-weight:700">APPROVE</button>'
+          + '<button onclick="creedDeny(\'' + a.id + '\')" title="Permanent. Creed will not propose this again." style="background:transparent;border:1px solid var(--border);color:var(--muted);font-size:9px;padding:3px 8px;border-radius:4px;cursor:pointer">DENY</button>'
+          + '</div>';
+      } else {
+        buttons = '<button onclick="event.stopPropagation();creedDismiss(\'' + a.id + '\')" style="background:transparent;border:1px solid var(--border);color:var(--muted);font-size:9px;padding:2px 6px;border-radius:4px;cursor:pointer;flex-shrink:0">dismiss</button>';
+      }
+      var detailId = 'creedDetail-' + a.id.replace(/[^a-zA-Z0-9_-]/g, '');
+      var act = a.proposed_action || a.action;
+      var headline = creedHeadline(a);
+      var why = creedWhy(a);
+      var safety = creedSafety(a);
+      var sizeText = a.size_mb ? (a.size_mb >= 1024 ? (a.size_mb/1024).toFixed(2) + ' GB' : Math.round(a.size_mb) + ' MB') : null;
+      var label = function(t){ return '<div style="color:var(--muted);letter-spacing:1px;font-size:9px;font-family:\'JetBrains Mono\',monospace;margin-bottom:3px">' + t + '</div>'; };
+      var row = function(t, v){ return '<div style="margin-bottom:8px">' + label(t) + '<div style="font-size:12px;line-height:1.55;word-break:break-word">' + v + '</div></div>'; };
+      var details = '<div id="' + detailId + '" style="display:none;margin-top:10px;padding:10px 12px;background:var(--surface);border-radius:4px;border:1px solid var(--border)">'
+        + row('WHAT CREED WILL DO', actDesc)
+        + (a.target ? row('TARGET', '<span style="font-family:\'JetBrains Mono\',monospace">' + a.target + '</span>') : '')
+        + (sizeText ? row('SIZE', sizeText) : '')
+        + (a.confidence != null ? row('CONFIDENCE', Math.round(a.confidence * 100) + '%') : '')
+        + (a.source ? row('FOUND BY', a.source) : '')
+        + (a.reasoning ? row('FULL REASONING', a.reasoning) : '')
+        + row('ORIGINAL ALERT', '<span style="color:var(--muted);font-style:italic">' + a.msg + '</span>')
+        + '</div>';
+      return '<div onclick="var d=document.getElementById(\'' + detailId + '\');if(d)d.style.display=d.style.display===\'none\'?\'block\':\'none\';" style="padding:10px 12px;border-left:3px solid ' + color + ';background:var(--surface2);border-radius:4px;opacity:' + op + ';cursor:pointer" title="Click for full technical details">'
+        + '<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px">'
+        + '<div style="min-width:0;flex:1">'
+        +   '<div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-bottom:6px">'
+        +     '<span style="color:' + color + ';font-size:9px;letter-spacing:1px;font-family:\'JetBrains Mono\',monospace">[' + lvl.toUpperCase() + ']</span>'
+        +     '<span style="font-size:13px;font-weight:700;color:var(--text)">' + headline + '</span>'
+        +     actionLine + decisionBadge
+        +   '</div>'
+        +   '<div style="font-size:11px;line-height:1.5;color:var(--text);margin-bottom:3px"><span style="color:var(--muted);font-weight:700">Why: </span>' + why + '</div>'
+        +   '<div style="font-size:11px;line-height:1.5;color:var(--muted);margin-bottom:4px"><span style="font-weight:700">Safety: </span>' + safety + '</div>'
+        +   '<div style="color:var(--muted);font-size:9px;font-family:\'JetBrains Mono\',monospace">' + creedFmtAgo(a.ts) + ' - click card for technical details</div>'
+        + '</div>'
+        + buttons
+        + '</div>'
+        + details
+        + '</div>';
+    }).join('');
+  }
+
+  // top processes
+  var pEl = document.getElementById('creedProcs');
+  var procs = s.top_processes || [];
+  if (procs.length) {
+    pEl.innerHTML = '<table style="width:100%;border-collapse:collapse"><thead><tr style="color:var(--muted);font-size:9px;letter-spacing:1px"><th style="text-align:left;padding:4px 0">PROCESS</th><th style="text-align:right">CPU%</th><th style="text-align:right">RAM MB</th></tr></thead><tbody>'
+      + procs.map(function(p){
+          return '<tr style="border-top:1px solid var(--border)"><td style="padding:4px 0">' + p.name + '</td><td style="text-align:right">' + p.cpu + '</td><td style="text-align:right">' + p.ram_mb + '</td></tr>';
+        }).join('')
+      + '</tbody></table>';
+  } else {
+    pEl.innerHTML = '<span style="color:var(--muted)">no data yet</span>';
+  }
+
+  // recommendations
+  var recEl = document.getElementById('creedRecs');
+  if (audit && audit.verdicts) {
+    var v = audit.verdicts;
+    var html = '<div style="margin-bottom:8px;font-style:italic;color:var(--muted)">Creed: Here\'s what I think after my last walk-through.</div>';
+    if (v.fix && v.fix.length) {
+      html += '<div style="margin-bottom:6px"><strong style="color:var(--coral, #fc8181)">Fix soon:</strong><ul style="margin:4px 0 0 18px;padding:0">' + v.fix.map(function(x){ return '<li>' + x + '</li>'; }).join('') + '</ul></div>';
+    }
+    if (v.notice && v.notice.length) {
+      html += '<div style="margin-bottom:6px"><strong style="color:var(--gold, #fbbf24)">Worth knowing:</strong><ul style="margin:4px 0 0 18px;padding:0">' + v.notice.map(function(x){ return '<li>' + x + '</li>'; }).join('') + '</ul></div>';
+    }
+    if (v.great && v.great.length) {
+      html += '<div><strong style="color:var(--mint, #4fd1c5)">Doing great:</strong><ul style="margin:4px 0 0 18px;padding:0">' + v.great.map(function(x){ return '<li>' + x + '</li>'; }).join('') + '</ul></div>';
+    }
+    recEl.innerHTML = html;
+  }
+
+  // audit md
+  if (payload.audit_md) {
+    document.getElementById('creedAuditMd').textContent = payload.audit_md;
+  }
+  if (audit) {
+    document.getElementById('creedAuditMeta').textContent = 'captured ' + creedFmtAgo(audit.captured_at) + ' - score ' + audit.health_score + '/100 - ' + audit.elapsed_sec + 's scan';
+  }
+
+  // subtitle quote
+  if (s.creed_quote) document.getElementById('creedSubtitle').textContent = '"' + s.creed_quote + '"';
+}
+
+function creedFetch() {
+  fetch('/api/creed-status').then(function(r){ return r.json(); }).then(function(j){
+    window.CREED.data = j;
+    window.CREED.lastFetch = Date.now();
+    creedRender(j);
+  }).catch(function(e){ console.warn('creed fetch failed', e); });
+  creedFetchMetrics();
+  creedFetchPending();
+  creedFetchCompleted();
+}
+
+function creedAction(name) {
+  fetch('/api/creed-action/' + name, { method: 'POST' }).then(function(r){ return r.json(); }).then(function(j){
+    if (j.creed_msg) alert(j.creed_msg + (j.suggestions && j.suggestions.length ? '\n\n' + j.suggestions.slice(0,8).map(function(s){ return '- ' + s.name + ' (' + s.size_mb + ' MB)'; }).join('\n') : ''));
+    else if (j.msg) alert(j.msg);
+    setTimeout(creedFetch, 800);
+  }).catch(function(e){ alert('Creed: Something went wrong. ' + e); });
+}
+
+function creedDismiss(id) {
+  fetch('/api/creed-alert/dismiss', {
+    method: 'POST', headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({ id: id })
+  }).then(function(){ creedFetch(); });
+}
+
+function creedApprove(id) {
+  fetch('/api/creed-alert/approve', {
+    method: 'POST', headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({ id: id })
+  }).then(function(){ creedFetch(); });
+}
+
+function creedDeny(id) {
+  if (!confirm('Deny is permanent. Creed will not propose this again. Continue?')) return;
+  fetch('/api/creed-alert/deny', {
+    method: 'POST', headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({ id: id })
+  }).then(function(){ creedFetch(); });
+}
+
+function creedActionDescribe(a) {
+  var map = {
+    delete_file: "Keelan moves this file to the Recycle Bin manually (or runs the queued executor). Reversible: restore from Recycle Bin within 30 days.",
+    archive: "Move to a long-term archive location (external drive or OneDrive Archive folder). Keep the file, free disk.",
+    disable_autostart: "Remove the Run-key / Startup-folder / scheduled-task entry so the program stops launching at login. The program itself stays installed and still runs when you click it.",
+    kill_process: "Stop the running process right now (Task Manager end-task). Reversible: relaunch manually or reboot. Does not prevent it from starting again.",
+    uninstall: "Remove the program entirely via Settings > Apps or its own uninstaller. Irreversible without reinstalling.",
+    disable_service: "Set Windows Service startup to Disabled (services.msc). Reversible by switching back to Automatic/Manual.",
+    disable_scheduled_task: "Disable the scheduled task so it stops firing (schtasks /Change /Disable). Reversible.",
+    manual_review: "Creed wants you to look at this yourself and decide. No action staged - this is a recommendation.",
+    update_driver: "Download and install a newer driver. Windows keeps the old one so you can roll back if something breaks.",
+    add_defender_exclusion: "Tell Windows Defender to skip scanning this folder. Reversible in Windows Security > Virus & threat protection > Exclusions.",
+    change_setting: "Flip a Windows setting. Reversible in the same settings page.",
+    clear_cache: "Delete temporary files a program left behind. Safe - the app will rebuild the cache as needed.",
+    consolidate_secret: "Move an API key / token from a scattered location to one central secrets folder. Keeps code working, just better organized.",
+    review_firewall: "A port on your computer is reachable from the network. Tightening the firewall rule reduces exposure. Reversible.",
+  };
+  return map[a] || "No description available for this action type.";
+}
+
+// Clear action-statement headline: "Disable autostart: Discord" rather than Creed's prose msg.
+function creedHeadline(a) {
+  var act = a.proposed_action || a.action;
+  var tgt = a.target || '';
+  var tgtShort = tgt;
+  // Strip Windows paths to just the filename
+  if (tgt.indexOf('\\') !== -1) tgtShort = tgt.split('\\').pop();
+  // Strip registry prefixes like "HKCU\Run::Steam" -> "Steam"
+  if (tgt.indexOf('::') !== -1) tgtShort = tgt.split('::').pop();
+  var titles = {
+    delete_file: 'Delete file',
+    archive: 'Archive file',
+    disable_autostart: 'Disable autostart',
+    kill_process: 'Close running program',
+    uninstall: 'Uninstall program',
+    disable_service: 'Turn off Windows service',
+    disable_scheduled_task: 'Disable scheduled task',
+    update_driver: 'Update driver',
+    add_defender_exclusion: 'Add Defender folder exclusion',
+    change_setting: 'Change Windows setting',
+    clear_cache: 'Clear cache',
+    consolidate_secret: 'Move secret to central folder',
+    review_firewall: 'Review open network port',
+    run_full_scan: 'Run full antivirus scan',
+    rotate_credential: 'Rotate credential',
+    enable_backup: 'Enable backup',
+    setup_backup: 'Set up backup',
+    configure_firewall: 'Tighten firewall rule',
+    tighten_port: 'Tighten network port',
+    update_software: 'Install pending update',
+    apply_update: 'Install pending update',
+    install_tool: 'Install diagnostic tool',
+    manual_review: 'Take a look',
+  };
+  var verb = titles[act] || (act ? act.replace(/_/g,' ') : 'Action');
+  return tgtShort ? verb + ': ' + tgtShort : verb;
+}
+
+// Short plain-English WHY: one sentence on the purpose. Separate from SAFETY so they can be styled apart.
+function creedWhy(a) {
+  var act = a.proposed_action || a.action;
+  var size = a.size_mb ? (a.size_mb >= 1024 ? (a.size_mb/1024).toFixed(1) + ' GB' : Math.round(a.size_mb) + ' MB') : null;
+  var whys = {
+    delete_file: 'Old, unused, and eating disk space' + (size ? ' (' + size + ')' : '') + '.',
+    archive: 'Free your main disk without losing the file.',
+    disable_autostart: 'Faster boot, less RAM sitting idle in the background.',
+    kill_process: 'It is using RAM or CPU right now while you are not using it.',
+    uninstall: 'You do not use this program.',
+    disable_service: 'Saves RAM, reduces disk spikes.',
+    disable_scheduled_task: 'Fewer background wakeups.',
+    update_driver: 'Current driver is stale. Newer one usually means better performance and stability.',
+    add_defender_exclusion: 'Defender scans every file write in this folder, slowing dev work.',
+    change_setting: 'A Windows setting is currently tuned against performance.',
+    clear_cache: 'Temp files piled up.',
+    consolidate_secret: 'Secret is scattered. One central folder makes rotation and audit easier.',
+    review_firewall: 'A port on your machine is open to the network. Tighter firewall rule = less exposure.',
+    run_full_scan: 'Quick scans only check common spots. Full scan checks every file at least once.',
+    rotate_credential: 'The old credential may be leaked or retired.',
+    enable_backup: 'Single disk. One hardware failure or ransomware event wipes everything not backed up.',
+    setup_backup: 'Single disk. One hardware failure or ransomware event wipes everything not backed up.',
+    configure_firewall: 'Reduces attack surface.',
+    tighten_port: 'Reduces attack surface.',
+    update_software: 'Has pending security patches or bug fixes.',
+    apply_update: 'Has pending security patches or bug fixes.',
+    install_tool: 'Gives Creed better visibility next time there is a problem.',
+    manual_review: 'Creed is not sure and wants you to decide.',
+  };
+  if (whys[act]) return whys[act];
+  if (a.reasoning) return a.reasoning.split(/[.!?]\s/)[0] + '.';
+  return 'Creed flagged this. Click for full details.';
+}
+
+// Safety / reversibility note.
+function creedSafety(a) {
+  var act = a.proposed_action || a.action;
+  var safes = {
+    delete_file: 'Goes to Recycle Bin - you can restore it.',
+    archive: 'File is not deleted, just moved.',
+    disable_autostart: 'Program still works when you click it.',
+    kill_process: 'Comes back next time you open it or reboot.',
+    uninstall: 'Irreversible without reinstalling.',
+    disable_service: 'Re-enable in services.msc if anything breaks.',
+    disable_scheduled_task: 'Fully reversible in Task Scheduler.',
+    update_driver: 'Windows keeps the old driver for rollback.',
+    add_defender_exclusion: 'Reversible in Windows Security > Exclusions. Only do this for folders you trust.',
+    change_setting: 'Reversible in the same settings page.',
+    clear_cache: 'Safe - the app will rebuild the cache as needed.',
+    consolidate_secret: 'Copy first, update code, smoke test, then delete old.',
+    review_firewall: 'Reversible in Windows Defender Firewall.',
+    run_full_scan: 'Read-only scan. Takes hours. Run overnight.',
+    rotate_credential: 'Reversible - just generate a new key.',
+    enable_backup: 'Only adds protection, does not change existing files.',
+    setup_backup: 'Only adds protection, does not change existing files.',
+    configure_firewall: 'Reversible in Windows Defender Firewall.',
+    tighten_port: 'Reversible in Windows Defender Firewall.',
+    update_software: 'Most updates reversible via Settings > Update history.',
+    apply_update: 'Most updates reversible via Settings > Update history.',
+    install_tool: 'Standard install - uninstall anytime.',
+    manual_review: 'No automatic action. Just a heads-up.',
+  };
+  return safes[act] || 'Reversible unless stated otherwise.';
+}
+
+// Keep old API for back-compat with callers elsewhere on the page.
+function creedPlainEnglish(a) {
+  var act = a.proposed_action || a.action;
+  var size = a.size_mb ? (a.size_mb >= 1024 ? (a.size_mb/1024).toFixed(1) + ' GB' : Math.round(a.size_mb) + ' MB') : null;
+  switch (act) {
+    case 'delete_file':
+      return 'What: an old file you probably forgot about' + (size ? ' (' + size + ')' : '') + '. Why: frees disk space. Safety: goes to Recycle Bin, you can restore it.';
+    case 'disable_autostart':
+      return 'What: stop this program from launching itself when you sign in. Why: faster boot, less RAM sitting idle. Safety: program still works when you click it.';
+    case 'kill_process':
+      return 'What: close this program right now. Why: it is using RAM or CPU while you are not using it. Safety: it will come back next time you open it or reboot.';
+    case 'uninstall':
+      return 'What: remove this program completely. Why: you do not use it. Safety: you would have to reinstall to get it back, so only approve if you are sure.';
+    case 'disable_service':
+      return 'What: turn off a Windows background service. Why: saves RAM and reduces disk spikes. Safety: re-enable in Services if anything breaks.';
+    case 'disable_scheduled_task':
+      return 'What: stop a task that runs on a timer. Why: fewer wakeups, less background noise. Safety: fully reversible in Task Scheduler.';
+    case 'update_driver':
+      return 'What: install a newer driver. Why: current one is stale, usually means better performance and stability. Safety: Windows keeps the old one for rollback.';
+    case 'add_defender_exclusion':
+      return 'What: tell Windows Defender to skip scanning this folder. Why: dev folders get scanned on every file write, slowing things down. Safety: only for folders you trust.';
+    case 'change_setting':
+      return 'What: flip a Windows setting for better performance. Safety: reversible in the same settings page.';
+    case 'clear_cache':
+      return 'What: delete temp files an app left lying around. Why: frees disk. Safety: the app rebuilds what it needs.';
+    case 'consolidate_secret':
+      return 'What: move an API key to your central secrets folder. Why: one place to manage all keys. Safety: copy first, update code, then delete old - nothing breaks.';
+    case 'review_firewall':
+      return 'What: a network port on your computer is open to your local network. Why: tightening it to localhost-only means fewer ways in. Safety: reversible in firewall rules.';
+    case 'manual_review':
+      return 'What: Creed is not sure and wants you to decide. No automatic action. Just a heads-up.';
+    case 'archive':
+      return 'What: move a file to a long-term archive (external drive / cloud). Why: frees your main disk but keeps the file. Safety: file is not deleted, just moved.';
+    case 'run_full_scan':
+      return 'What: run a one-time full antivirus scan of your whole drive. Why: quick scans only look at common spots, full scan checks every file. Safety: read-only, takes hours, run overnight.';
+    case 'rotate_credential':
+      return 'What: change an API key or password. Why: the old one may be retired or leaked. Safety: reversible, just generate a new one and update code.';
+    case 'enable_backup':
+    case 'setup_backup':
+      return 'What: turn on a backup (File History, BitLocker, cloud sync). Why: single disk means one failure wipes everything. Safety: only adds protection.';
+    case 'configure_firewall':
+    case 'tighten_port':
+      return 'What: change a firewall rule so fewer machines can reach this port. Why: reduces attack surface. Safety: reversible in Windows Defender Firewall.';
+    case 'update_software':
+    case 'apply_update':
+      return 'What: install a pending software update. Why: security patches and bug fixes. Safety: most updates reversible via Settings > Update history.';
+    case 'install_tool':
+      return 'What: install a diagnostic tool for future investigations. Why: gives Creed better visibility next time. Safety: standard install, uninstall anytime.';
+    default:
+      if (a.reasoning) {
+        var first = a.reasoning.split(/[.!?]\s/)[0];
+        return 'What: ' + first + '. Click for full details.';
+      }
+      return 'Creed flagged this but did not include a plain summary. Click the card for full details.';
+  }
+}
+
+function creedSetBaseline() {
+  if (!confirm("Pin CURRENT CPU / RAM / disk as the 'before cleanup' baseline? This replaces any existing baseline.")) return;
+  fetch('/api/creed-baseline/set', { method: 'POST' }).then(function(r){ return r.json(); }).then(function(j){
+    if (j.baseline) creedFetchMetrics();
+    alert("Baseline pinned.\nCPU " + (j.baseline.cpu_pct||'-') + "%, RAM " + (j.baseline.ram_pct||'-') + "%, Disk free " + (j.baseline.disk_c_free_gb||'-') + " GB, Health " + (j.baseline.health_score||'-') + "/100.");
+  });
+}
+
+function creedDelta(before, after, unit, lowerIsBetter) {
+  if (before == null || after == null) return '<span style="color:var(--muted)">-</span>';
+  var d = after - before;
+  var sign = d > 0 ? '+' : '';
+  var good = lowerIsBetter ? d < 0 : d > 0;
+  var col = Math.abs(d) < 0.1 ? 'var(--muted)' : (good ? 'var(--mint, #4fd1c5)' : 'var(--coral, #fc8181)');
+  return '<span style="color:' + col + '">' + sign + d.toFixed(1) + unit + '</span>';
+}
+
+function creedFetchMetrics() {
+  fetch('/api/creed-metrics').then(function(r){ return r.json(); }).then(function(j){
+    var el = document.getElementById('creedImpact');
+    var meta = document.getElementById('creedImpactMeta');
+    if (!j.baseline) {
+      el.innerHTML = '<div style="color:var(--muted);font-style:italic;grid-column:1/-1">No baseline pinned. Click "Pin baseline" above, then complete approved actions to see deltas.</div>';
+      meta.textContent = 'no baseline - completed ' + (j.completed_count || 0);
+      return;
+    }
+    var b = j.baseline, c = j.current || {};
+    meta.textContent = 'baseline ' + (b.captured_at ? creedFmtAgo(b.captured_at) : 'set') + ' - ' + (j.completed_count || 0) + ' completed';
+    function cell(label, before, after, unit, lower) {
+      return '<div style="padding:10px;background:var(--surface2);border-radius:4px;border:1px solid var(--border)">'
+        + '<div style="font-size:9px;color:var(--muted);letter-spacing:1px;margin-bottom:4px;font-family:\'JetBrains Mono\',monospace">' + label + '</div>'
+        + '<div style="font-size:16px;font-weight:700">' + (after == null ? '-' : (after + unit)) + '</div>'
+        + '<div style="font-size:9px;color:var(--muted)">was ' + (before == null ? '-' : before + unit) + ' ' + creedDelta(before, after, unit, lower) + '</div>'
+        + '</div>';
+    }
+    el.innerHTML =
+      cell('CPU LOAD', b.cpu_pct, c.cpu_pct, '%', true) +
+      cell('RAM USED', b.ram_used_gb, c.ram_used_gb, ' GB', true) +
+      cell('DISK C: FREE', b.disk_c_free_gb, c.disk_c_free_gb, ' GB', false) +
+      cell('HEALTH', b.health_score, c.health_score, '/100', false) +
+      cell('UPTIME', b.uptime_days, c.uptime_days, 'd', false);
+  }).catch(function(e){ console.warn('metrics fetch failed', e); });
+}
+
+function creedFetchPending() {
+  fetch('/api/creed-pending').then(function(r){ return r.json(); }).then(function(j){
+    var el = document.getElementById('creedPending');
+    var cnt = document.getElementById('creedPendingCount');
+    var list = j.pending || [];
+    cnt.textContent = list.length + ' waiting for you to do';
+    if (!list.length) {
+      el.innerHTML = '<div style="color:var(--muted);font-style:italic">Approved proposals land here. Click MARK COMPLETE after you\'ve done the change.</div>';
+      return;
+    }
+    el.innerHTML = list.map(function(p){
+      var desc = creedActionDescribe(p.action);
+      return '<div style="padding:8px;background:var(--surface2);border:1px solid var(--border);border-radius:4px;display:flex;justify-content:space-between;align-items:flex-start;gap:8px">'
+        + '<div style="min-width:0;flex:1">'
+        +   '<div style="font-size:12px;margin-bottom:2px">' + (p.msg || p.target) + '</div>'
+        +   '<div style="font-size:9px;color:var(--muted);font-family:\'JetBrains Mono\',monospace;word-break:break-all">' + (p.target || '') + '</div>'
+        +   '<div style="font-size:10px;color:var(--muted);margin-top:4px"><span style="background:var(--surface);border:1px solid var(--border);padding:1px 5px;border-radius:3px;font-size:8px;letter-spacing:1px">' + (p.action || 'action') + '</span> ' + desc + '</div>'
+        + '</div>'
+        + '<button onclick="creedComplete(\'' + p.id + '\')" style="background:var(--mint-dim, rgba(79,209,197,0.15));border:1px solid var(--mint, #4fd1c5);color:var(--mint, #4fd1c5);font-size:10px;padding:4px 10px;border-radius:4px;cursor:pointer;font-weight:700;flex-shrink:0">MARK COMPLETE</button>'
+        + '</div>';
+    }).join('');
+  }).catch(function(e){ console.warn('pending fetch failed', e); });
+}
+
+function creedFetchCompleted() {
+  fetch('/api/creed-completed').then(function(r){ return r.json(); }).then(function(j){
+    var el = document.getElementById('creedCompleted');
+    var cnt = document.getElementById('creedCompletedCount');
+    var list = j.completed || [];
+    cnt.textContent = list.length + ' done';
+    if (!list.length) {
+      el.innerHTML = '<div style="color:var(--muted);font-style:italic">Nothing archived yet.</div>';
+      return;
+    }
+    el.innerHTML = list.slice(0, 100).map(function(c){
+      return '<div style="padding:4px 6px;background:var(--surface2);border-radius:3px;display:flex;justify-content:space-between;gap:8px">'
+        + '<span style="min-width:0;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="' + (c.target||'').replace(/"/g,'&quot;') + '"><span style="color:var(--mint, #4fd1c5)">' + (c.action || '?') + '</span> ' + (c.target || c.msg || '') + '</span>'
+        + '<span style="color:var(--muted);flex-shrink:0">' + creedFmtAgo(c.completed_at) + '</span>'
+        + '</div>';
+    }).join('');
+  }).catch(function(e){ console.warn('completed fetch failed', e); });
+}
+
+function creedComplete(id) {
+  fetch('/api/creed-pending/complete', {
+    method: 'POST', headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({ id: id })
+  }).then(function(){ creedFetchPending(); creedFetchCompleted(); creedFetchMetrics(); });
+}
+
+// auto-refresh when tab is active
+setInterval(function(){
+  var p = document.getElementById('panel-creed');
+  if (p && p.classList.contains('active')) creedFetch();
+}, 15000);
+
+// fetch once on load so the badge populates
+setTimeout(creedFetch, 1500);
+
+// ============ TYRONE TAB ============
+function tyroneRefresh() {
+  var roster = document.getElementById('tyroneRoster');
+  var meta = document.getElementById('tyroneRosterMeta');
+  var badge = document.getElementById('tyroneActiveBadge');
+  var updated = document.getElementById('tyroneUpdated');
+  fetch('/api/agent-status').then(function(r){ return r.ok ? r.json() : null; }).then(function(j){
+    if (!j || !roster) return;
+    var agents;
+    if (Array.isArray(j)) agents = j;
+    else if (j.agents) agents = j.agents;
+    else agents = Object.keys(j).map(function(k){ var v = j[k] || {}; v.name = v.name || k; return v; });
+    // sort: active first, then alphabetical
+    agents.sort(function(a,b){ return (b.active?1:0) - (a.active?1:0) || (a.name||'').localeCompare(b.name||''); });
+    var active = 0;
+    var html = '';
+    agents.forEach(function(a){
+      var name = a.name || a.agent || '?';
+      var task = a.task_description || a.current_task || a.task || a.status || 'idle';
+      var isActive = !!(a.active || (a.status && String(a.status).toLowerCase() === 'active'));
+      if (isActive) active++;
+      var color = (window.CHAR_COLORS && CHAR_COLORS[name]) || 'var(--muted)';
+      html += '<div style="display:flex;align-items:center;gap:8px;padding:6px 8px;background:var(--surface2);border-radius:4px;border-left:3px solid '+color+'">'
+        + '<span style="width:8px;height:8px;border-radius:50%;background:'+(isActive?'#4ade80':'#555')+'"></span>'
+        + '<span style="font-weight:600;color:'+color+';min-width:80px">'+name+'</span>'
+        + '<span style="color:var(--muted);font-size:11px;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+task+'</span>'
+        + '</div>';
+    });
+    roster.innerHTML = html || '<div style="color:var(--muted);font-size:11px">no agents reporting</div>';
+    if (meta) meta.textContent = agents.length + ' agents · ' + active + ' active';
+    if (badge) badge.textContent = active;
+    if (updated) updated.textContent = new Date().toLocaleTimeString();
+  }).catch(function(){
+    if (roster) roster.innerHTML = '<div style="color:var(--muted);font-size:11px">/api/agent-status unreachable</div>';
+  });
+}
+
+setInterval(function(){
+  var p = document.getElementById('panel-tyrone');
+  if (p && p.classList.contains('active')) tyroneRefresh();
+}, 10000);
+
+setTimeout(tyroneRefresh, 1800);
+
+</script>
+
+<script>
 // ============ THEME ============
 function toggleTheme() {
   var next = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
@@ -1708,6 +3793,8 @@ document.querySelectorAll('.tab').forEach(function(tab) {
     newPanel.style.animation = 'none';
     newPanel.style.opacity = '1';
     if (tab.dataset.tab === 'operations') { fetchResearchFiles(); fetchSystemHealth(); fetchChatStats(); fetchSessionStats(); renderAgentTimeline(); renderBurnRate(); renderDeployHistory(); }
+    if (tab.dataset.tab === 'creed') { try { creedFetch(); } catch(e){} }
+    if (tab.dataset.tab === 'tyrone') { try { tyroneRefresh(); } catch(e){} }
     updateMinimapVisibility(tab.dataset.tab);
   });
 });
@@ -2049,8 +4136,10 @@ var CHAR_MAP = {'Tyrone':'Tyrone','Night brain':'Dwight','Lead gen':'Jim','Websi
 // Only characters with active agent roles are listed here.
 // Hidden (no job yet): Dwight, Pam, Stanley, Angela, Toby, Phyllis, Andy
 // Add them back here AND to DRAWER_AGENTS when they get assigned a role.
-var PERMANENT_RESIDENTS = ['Tyrone', 'Jim', 'Ryan', 'Oscar', 'Kelly', 'Kevin', 'Creed'];
-var CHAR_COLORS = {'Tyrone':'var(--char-tyrone)','Dwight':'var(--char-dwight)','Jim':'var(--char-jim)','Pam':'var(--char-pam)','Ryan':'var(--char-ryan)','Oscar':'var(--char-oscar)','Kelly':'var(--char-kelly)','Kevin':'var(--char-kevin)','Stanley':'var(--char-stanley)','Michael':'var(--char-michael)','Ryan Howard':'var(--char-ryan)','Angela':'#8A6B4A','Toby':'#5A7A4A','Creed':'var(--char-creed)'};
+var PERMANENT_RESIDENTS = ['Tyrone', 'Jim', 'Ryan', 'Oscar', 'Kelly', 'Kevin', 'Creed', 'Phyllis', 'Andy'];
+// Short display labels for on-screen sprite name tags (underlying name in registry unchanged)
+var CHAR_DISPLAY_LABEL = { 'Phyllis': 'Phyl' };
+var CHAR_COLORS = {'Tyrone':'var(--char-tyrone)','Dwight':'var(--char-dwight)','Jim':'var(--char-jim)','Pam':'var(--char-pam)','Ryan':'var(--char-ryan)','Oscar':'var(--char-oscar)','Kelly':'var(--char-kelly)','Kevin':'var(--char-kevin)','Stanley':'var(--char-stanley)','Michael':'var(--char-michael)','Ryan Howard':'var(--char-ryan)','Angela':'#8A6B4A','Toby':'#5A7A4A','Creed':'var(--char-creed)','Phyllis':'var(--char-phyllis)','Andy':'var(--char-andy)'};
 
 function agentLabel(s) {
   var cwd=(s.cwd||'').replace(/\\/g,'/'),parts=cwd.split('/').filter(Boolean),last=parts[parts.length-1]||'',second=parts[parts.length-2]||'';
@@ -2098,7 +4187,13 @@ async function fetchAgents() {
       }
       html+='</div>';
     }
+    var _agDocEl = document.scrollingElement || document.documentElement;
+    var _agSavedWinY = window.scrollY || (_agDocEl ? _agDocEl.scrollTop : 0);
+    var _agScrollPanel = document.querySelector('.panel.active');
+    var _agSavedPanelY = _agScrollPanel ? _agScrollPanel.scrollTop : 0;
     el.innerHTML=html||'<div style="font-size:12px;color:var(--muted);padding:8px 0;font-style:italic">None running</div>';
+    if (_agScrollPanel) _agScrollPanel.scrollTop = _agSavedPanelY;
+    if (_agSavedWinY) { if (_agDocEl) _agDocEl.scrollTop = _agSavedWinY; window.scrollTo(window.scrollX, _agSavedWinY); }
     _lastAgentSessions = sessions; // cache for analytics hooks
     // Render agent drawer
     // Fetch background agent status FIRST so drawer and Phaser both know who's active
@@ -2153,6 +4248,8 @@ var DRAWER_AGENTS = [
   { name: 'Kelly',  role: 'clothes resale',      spriteIdx: 2, charColor: 'var(--char-kelly)',  isRyan: false },
   { name: 'Kevin',  role: 'homework agent',      spriteIdx: 5, charColor: 'var(--char-kevin)',  isRyan: false },
   { name: 'Creed',  role: 'sysadmin / security',  spriteIdx: 0, charColor: 'var(--char-creed)',  isRyan: false },
+  { name: 'Phyllis', role: 'outreach manager',     spriteIdx: 3, charColor: 'var(--char-phyllis)', isRyan: false },
+  { name: 'Andy',   role: 'phone calls',           spriteIdx: 1, charColor: 'var(--char-andy)',   isRyan: false },
 ];
 var drawerDetailCache = {};
 var drawerOpen = {};
@@ -2223,10 +4320,12 @@ function renderAgentDrawer(activeSessions, agentStatusData) {
   }
 
   // Rebuild: two rows of item chips + one shared detail panel below
-  // Preserve scroll position - drawer.innerHTML = '' collapses the drawer to 0 height which
-  // causes the panel's scroll anchor to be lost, jumping the user back to the top of the page.
+  // Preserve scroll position across the rebuild for window AND any active panel,
+  // otherwise the drawer briefly collapses and yanks the user back to the top.
   var _scrollPanel = document.querySelector('.panel.active');
   var _savedScrollTop = _scrollPanel ? _scrollPanel.scrollTop : 0;
+  var _scrollDocEl = document.scrollingElement || document.documentElement;
+  var _savedWinY = window.scrollY || (_scrollDocEl ? _scrollDocEl.scrollTop : 0);
   drawer.innerHTML = '';
 
   var row1 = document.createElement('div');
@@ -2239,10 +4338,13 @@ function renderAgentDrawer(activeSessions, agentStatusData) {
   panel.className = 'drawer-panel' + (drawerActiveAgent ? ' open' : '');
   panel.id = 'drawerSharedPanel';
 
+  var _permanentCount = DRAWER_AGENTS.length;
   items.forEach(function(agent, idx) {
-    var row = idx < 7 ? row1 : row2;
+    // All permanent residents (DRAWER_AGENTS) live in row1 so they share one row.
+    // Any session-spawned extras (added later via activeSessions push) wrap to row2.
+    var row = idx < _permanentCount ? row1 : row2;
     var wrap = document.createElement('div');
-    wrap.className = 'drawer-item' + (drawerActiveAgent === agent.name ? ' open' : '');
+    wrap.className = 'drawer-item' + (drawerActiveAgent === agent.name ? ' open' : '') + (agent.sessionActive ? ' is-active' : '');
     wrap.id = 'drawer-' + agent.name;
 
     // Header (stacked: sprite, name, role, status dot)
@@ -2315,32 +4417,127 @@ function renderAgentDrawer(activeSessions, agentStatusData) {
   drawer.appendChild(row2);
   drawer.appendChild(panel);
   if (_scrollPanel) _scrollPanel.scrollTop = _savedScrollTop;
+  if (_savedWinY) {
+    if (_scrollDocEl) _scrollDocEl.scrollTop = _savedWinY;
+    window.scrollTo(window.scrollX, _savedWinY);
+  }
 }
 
 var _drawerFetchAbort = null; // abort controller for in-flight drawer detail requests
+// Capture scroll state of any existing .drawer-convo inside bodyEl. Returns
+// { atBottom, savedScroll } so we can implement chat-style "stick to bottom"
+// behaviour across rebuilds. If the user was already at (or within ~30px of)
+// the bottom we re-pin them after the rebuild so they always see the newest
+// message. If they were scrolled up reading older messages we restore their
+// exact scrollTop instead.
+function _captureConvoScroll(bodyEl) {
+  if (!bodyEl) return null;
+  var convo = bodyEl.querySelector('.drawer-convo');
+  if (!convo) return null;
+  var atBottom = (convo.scrollHeight - convo.scrollTop - convo.clientHeight) < 30;
+  return { atBottom: atBottom, savedScroll: convo.scrollTop };
+}
+function _restoreConvoScroll(bodyEl, state) {
+  if (!bodyEl || !state) return;
+  var convo = bodyEl.querySelector('.drawer-convo');
+  if (!convo) return;
+  if (state.atBottom) convo.scrollTop = convo.scrollHeight;
+  else convo.scrollTop = state.savedScroll;
+}
 function buildDrawerBody(bodyEl, agentName) {
-  bodyEl.innerHTML = '<div class="drawer-loading" style="grid-column:1/-1">Loading...</div>';
-  // Use cache if fresh (< 8s)
-  var now = Date.now();
-  if (drawerDetailCache[agentName] && (now - drawerDetailCache[agentName].ts) < 8000) {
-    renderDrawerDetail(bodyEl, drawerDetailCache[agentName].data);
-    return;
-  }
-  // Abort any in-flight request to prevent stacking
+  // Lightweight status panel. We render whatever cached agent-status JSON we
+  // already have synchronously (no "Loading..." flash) and refresh in the
+  // background. No transcript fetching from this view -- Keelan just wants to
+  // know what the agent is doing right now and when it started.
   if (_drawerFetchAbort) { try { _drawerFetchAbort.abort(); } catch(e) {} }
-  _drawerFetchAbort = new AbortController();
-  fetch('/api/agent-detail?agent=' + encodeURIComponent(agentName), { signal: _drawerFetchAbort.signal })
+  _drawerFetchAbort = null;
+
+  var cached = (window.AGENT_STATUS_CACHE || {})[agentName];
+  if (cached) {
+    renderAgentStatusPanel(bodyEl, agentName, cached);
+  } else {
+    bodyEl.innerHTML = '<div class="drawer-loading" style="grid-column:1/-1">Fetching status...</div>';
+  }
+
+  fetch('/api/agent-status')
     .then(function(r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
     .then(function(data) {
-      _drawerFetchAbort = null;
-      drawerDetailCache[agentName] = { ts: Date.now(), data: data };
-      if (bodyEl && bodyEl.parentNode) renderDrawerDetail(bodyEl, data);
+      // /api/agent-status returns { agents: { Name: {...} } } or a flat map.
+      var map = (data && data.agents) ? data.agents : data;
+      window.AGENT_STATUS_CACHE = map || {};
+      var fresh = (map || {})[agentName] || {};
+      if (bodyEl && bodyEl.parentNode) renderAgentStatusPanel(bodyEl, agentName, fresh);
     })
-    .catch(function(e) {
-      if (e.name === 'AbortError') return; // ignore aborted requests
-      _drawerFetchAbort = null;
-      if (bodyEl && bodyEl.parentNode) bodyEl.innerHTML = '<div class="drawer-empty" style="grid-column:1/-1">Could not load agent detail.</div>';
+    .catch(function() {
+      if (bodyEl && bodyEl.parentNode && !cached) {
+        bodyEl.innerHTML = '<div class="drawer-empty" style="grid-column:1/-1">Could not load agent status.</div>';
+      }
     });
+}
+
+function _relTime(iso) {
+  if (!iso) return '';
+  var t = Date.parse(iso);
+  if (isNaN(t)) return '';
+  var s = Math.max(0, Math.floor((Date.now() - t) / 1000));
+  if (s < 60) return s + 's ago';
+  var m = Math.floor(s / 60);
+  if (m < 60) return m + 'm ago';
+  var h = Math.floor(m / 60);
+  if (h < 24) return h + 'h ' + (m % 60) + 'm ago';
+  var d = Math.floor(h / 24);
+  return d + 'd ' + (h % 24) + 'h ago';
+}
+
+function renderAgentStatusPanel(bodyEl, agentName, status) {
+  status = status || {};
+  var active = !!status.active;
+  var dotColor = active ? 'var(--green, #4caf50)' : 'var(--muted, #888)';
+  var label = active ? 'active' : 'idle';
+  var hasRichDesc = !!(status.task_description && String(status.task_description).trim());
+  var hasShortTask = !!(status.task && String(status.task).trim() && String(status.task).trim().toLowerCase() !== 'complete');
+
+  // Best-effort "last reported" fallback. If the heartbeat is sparse (no
+  // task_description, no started_at) we still want to tell Keelan WHEN the
+  // agent last checked in. Prefer last_seen, then lastActivityMs from the
+  // worker folder mtime scan the server does.
+  var lastReportedIso = status.last_seen || (status.lastActivityMs ? new Date(status.lastActivityMs).toISOString() : '');
+  var lastReportedRel = lastReportedIso ? _relTime(lastReportedIso) : '';
+
+  var desc;
+  if (hasRichDesc) {
+    desc = String(status.task_description).trim();
+  } else if (hasShortTask) {
+    desc = String(status.task).trim();
+  } else if (active) {
+    desc = 'Working - no detailed status reported.';
+  } else {
+    desc = 'No detailed status reported' + (lastReportedRel ? ' - agent last reported: ' + lastReportedRel : '') + '.';
+  }
+  var startedRel = status.started_at ? _relTime(status.started_at) : '';
+  var startedAbs = status.started_at ? new Date(status.started_at).toLocaleString() : '';
+  var lastSeenRel = status.last_seen ? _relTime(status.last_seen) : lastReportedRel;
+
+  bodyEl.innerHTML =
+    '<div style="grid-column:1/-1;padding:18px 22px;display:flex;flex-direction:column;gap:14px">' +
+      '<div style="display:flex;align-items:center;gap:14px">' +
+        '<div style="font-size:26px;font-weight:700;letter-spacing:.3px;color:var(--text)">' + escHtml(agentName) + '</div>' +
+        '<div style="display:flex;align-items:center;gap:6px;padding:4px 10px;border:1px solid var(--border);border-radius:999px;background:var(--surface2)">' +
+          '<span style="display:inline-block;width:9px;height:9px;border-radius:50%;background:' + dotColor + ';box-shadow:0 0 6px ' + dotColor + '"></span>' +
+          '<span style="font-size:11px;text-transform:uppercase;letter-spacing:.6px;color:var(--text);font-weight:600">' + label + '</span>' +
+        '</div>' +
+      '</div>' +
+      (status.started_at
+        ? '<div style="font-size:12px;color:var(--muted)"><span style="text-transform:uppercase;letter-spacing:.5px;font-size:10px;font-weight:700;color:var(--muted)">Started:</span> <span style="color:var(--text);font-weight:600">' + escHtml(startedRel) + '</span> <span style="color:var(--muted)" title="' + escHtml(startedAbs) + '">(' + escHtml(startedAbs) + ')</span></div>'
+        : '') +
+      '<div style="font-size:13px;line-height:1.55;color:var(--text);background:var(--surface2);border-left:3px solid ' + dotColor + ';padding:12px 14px;border-radius:6px;max-width:760px">' +
+        escHtml(desc) +
+      '</div>' +
+      (hasRichDesc && hasShortTask
+        ? '<div style="font-size:12px;color:var(--muted)"><span style="text-transform:uppercase;letter-spacing:.5px;font-size:10px;font-weight:700;color:var(--muted)">Current:</span> <span style="color:var(--text);font-weight:600">' + escHtml(String(status.task).trim()) + '</span></div>'
+        : '') +
+      (lastSeenRel ? '<div style="font-size:10px;color:var(--muted);letter-spacing:.4px">last_seen: ' + escHtml(lastSeenRel) + '</div>' : '') +
+    '</div>';
 }
 
 function renderDrawerDetail(bodyEl, data) {
@@ -2362,6 +4559,10 @@ function renderDrawerDetail(bodyEl, data) {
   }
 
   // Parse inter-agent messages as chat bubbles ([Name] message format)
+  // Each message can optionally start with a YYYY-MM-DD or YYYY-MM-DD HH:MM timestamp
+  // that the agent typed. We extract it and render as a small badge so Keelan can
+  // see when each message was written. The file mtime gives the last-update time
+  // and shows up as a header.
   var msgBubblesHtml = '';
   if (data.messages && data.messages.trim()) {
     var msgLines = data.messages.split('\n');
@@ -2372,17 +4573,39 @@ function renderDrawerDetail(bodyEl, data) {
         var text = match[2].trim();
         var isUser = (sender.toLowerCase() === 'keelan');
         var role = isUser ? 'user' : 'assistant';
+        // Pull out a leading date / datetime if present
+        var tsBadge = '';
+        // Allow either inline date in body OR a sender suffix that already had time stripped
+        var tsMatch = text.match(/^(\d{4}-\d{2}-\d{2})(?:[T\s]+(\d{1,2}:\d{2}(?:\s?[ap]m)?))?\s*[-\u2014]?\s*/i);
+        if (tsMatch) {
+          var dateStr = tsMatch[1];
+          var timeStr = tsMatch[2] || '';
+          var label = dateStr + (timeStr ? ' ' + timeStr : '');
+          tsBadge = ' <span style="color:var(--muted);font-weight:400;font-size:9px;margin-left:6px;letter-spacing:.3px">' + escHtml(label) + '</span>';
+          text = text.slice(tsMatch[0].length);
+        }
         msgBubblesHtml += '<div class="drawer-msg ' + role + '">' +
-          '<div class="drawer-msg-label">' + escHtml(sender) + '</div>' +
+          '<div class="drawer-msg-label">' + escHtml(sender) + tsBadge + '</div>' +
           escHtml(text) + '</div>';
       }
     });
+  }
+  // Header line showing file last-modified (best signal we have for "when did this conversation last update")
+  var msgHeaderHtml = '';
+  if (data.messagesMtime) {
+    var md = new Date(data.messagesMtime);
+    var hr = md.getHours(), mn = md.getMinutes();
+    var ampm = hr >= 12 ? 'pm' : 'am';
+    var hr12 = hr % 12; if (hr12 === 0) hr12 = 12;
+    var mtimeStr = (md.getMonth()+1) + '/' + md.getDate() + ' ' + hr12 + ':' + (mn < 10 ? '0' + mn : mn) + ampm;
+    msgHeaderHtml = '<div style="font-size:9px;color:var(--muted);margin-bottom:4px;letter-spacing:.4px">Last activity: ' + mtimeStr + '</div>';
   }
 
   // Build conversation column content
   var convoHtml = '';
   if (msgBubblesHtml) {
     convoHtml += '<div style="margin-bottom:6px;padding:4px 8px;background:var(--surface2);border-radius:6px;font-size:10px;color:var(--muted);font-style:italic">Inter-agent messages</div>';
+    convoHtml += msgHeaderHtml;
     convoHtml += msgBubblesHtml;
   }
   if (!data.conversation || data.conversation.length === 0) {
@@ -2392,8 +4615,18 @@ function renderDrawerDetail(bodyEl, data) {
       convoHtml += '<div style="margin:8px 0 6px;padding:4px 8px;background:var(--surface2);border-radius:6px;font-size:10px;color:var(--muted);font-style:italic">Session transcript</div>';
     }
     data.conversation.forEach(function(msg) {
+      var tsLabel = '';
+      if (msg.ts) {
+        var d = new Date(msg.ts);
+        var hr = d.getHours(), min = d.getMinutes();
+        var ampm = hr >= 12 ? 'pm' : 'am';
+        var hr12 = hr % 12; if (hr12 === 0) hr12 = 12;
+        var dateStr = (d.getMonth()+1) + '/' + d.getDate();
+        var timeStr = hr12 + ':' + (min < 10 ? '0' + min : min) + ampm;
+        tsLabel = ' <span style="color:var(--muted);font-weight:400;font-size:9px;margin-left:4px">' + dateStr + ' ' + timeStr + '</span>';
+      }
       convoHtml += '<div class="drawer-msg ' + msg.role + '">' +
-        '<div class="drawer-msg-label">' + (msg.role === 'user' ? 'Keelan' : data.agent) + '</div>' +
+        '<div class="drawer-msg-label">' + (msg.role === 'user' ? 'Keelan' : data.agent) + tsLabel + '</div>' +
         escHtml(msg.text) + '</div>';
     });
   }
@@ -2503,112 +4736,89 @@ function renderProjects() {
   targets.forEach(function(el){ el.innerHTML = html; });
 }
 
-// ============ LEADS ============
-var allLeads = [], currentFilter = 'all';
-async function fetchLeads() {
-  try { var ld=await smartFetch('/api/leads','/leads.json'); if(ld){allLeads=ld;renderLeads();updateCallStats();lastFetch.leads=Date.now();document.getElementById('leadsUpdated').textContent='Updated '+new Date().toLocaleTimeString();} } catch{}
-}
-function updateCallStats() {
-  var total=allLeads.length, withPhone=allLeads.filter(function(l){return l.phone;}).length, sent=allLeads.filter(function(l){return(l.emailSent||'').toLowerCase().includes('sent');}).length, demos=allLeads.filter(function(l){return l.demoSite;}).length, called=Object.keys(getCalledStatus()).filter(function(k){return getCalledStatus()[k];}).length;
-  document.getElementById('callingStats').innerHTML='<div class="calling-stat blue"><div class="num">'+total+'</div><div class="lbl">Total Leads</div></div><div class="calling-stat green"><div class="num">'+withPhone+'</div><div class="lbl">Has Phone</div></div><div class="calling-stat orange"><div class="num">'+demos+'</div><div class="lbl">Demos Built</div></div><div class="calling-stat"><div class="num" style="color:var(--mint)">'+sent+'</div><div class="lbl">Emails Sent</div></div><div class="calling-stat"><div class="num" style="color:var(--accent)">'+called+'</div><div class="lbl">Called</div></div>';
-  document.getElementById('callCount').textContent=withPhone;
-}
-function filterLeads(leads) {
-  var cm=getCalledStatus();
-  switch(currentFilter) {
-    case'call':return leads.filter(function(l){return l.phone&&(l.status||'').toLowerCase().includes('call');});
-    case'demo':return leads.filter(function(l){return l.demoSite;});
-    case'sent':return leads.filter(function(l){return(l.emailSent||'').toLowerCase().includes('sent');});
-    case'phone':return leads.filter(function(l){return l.phone;});
-    case'noresponse':return leads.filter(function(l){return(l.response||'').toLowerCase().includes('no')&&(l.emailSent||'').toLowerCase().includes('sent');});
-    case'called':return leads.filter(function(l){return cm[l.business];});
-    case'notcalled':return leads.filter(function(l){return l.phone&&!cm[l.business];});
-    default:return leads;
-  }
-}
-
-function generateScript(lead) {
-  var name=lead.business, industry=lead.industry||'your business', loc=lead.location||'', demo=lead.demoSite, notes=lead.notes||'', score=lead.score;
-  var opener='Hey, is this '+name+'? My name\'s Keelan, I\'m a web designer based out of Alabama.';
-  var hook='', pitch='', close='', objections=[], points=[];
-  var ownerMatch=notes.match(/[Oo]wner\s+(\w+)/);
-  if(ownerMatch) opener='Hey, is this '+ownerMatch[1]+'? My name\'s Keelan, I\'m a web designer based out of Alabama.';
-  if(demo){
-    hook='I came across '+name+' online and was really impressed with what y\'all do. I actually went ahead and built a free website concept for your business, just to show you what it could look like.';
-    pitch='It\'s a fully designed site with your services, your phone number, click-to-call buttons, the whole thing. Totally free, no obligation. I just wanted to show you what\'s possible.';
-    close='Can I shoot you a text with the link so you can check it out on your phone real quick?';
-  } else {
-    hook='I\'ve been working with local '+industry.toLowerCase()+' companies on their online presence, and I noticed '+name+' doesn\'t have a website showing up on Google right now.';
-    pitch='Most people search Google before they call anyone. "Best '+industry.toLowerCase()+' near me" gets hundreds of searches a month in '+(loc||'your area')+'. Without a website, all those potential customers are going to your competitors instead.';
-    close='I build professional websites for businesses like yours. Can I send you a couple examples of sites I\'ve done for similar companies?';
-  }
-  if(demo) points.push('TEXT THEM THE DEMO LINK RIGHT AWAY if they say yes');
-  if(ownerMatch) points.push('Ask for '+ownerMatch[1]+' by name if someone else answers');
-  if(notes.includes('reviews')||notes.includes('stars')){var sm=notes.match(/([\d.]+)\s*stars?/i);if(sm)points.push('Mention their '+sm[1]+'-star reviews. "Your reviews are great, your website should match that reputation."');else points.push('Mention their good reviews. Shows you did your homework.');}
-  if(notes.includes('Facebook'))points.push('"Right now people can only find you on Facebook. A website puts you on Google where most customers actually search."');
-  if(notes.includes('no website')||notes.includes('No website'))points.push('"When someone Googles \''+industry.toLowerCase()+' near me\' in '+(loc||'your area')+', you\'re invisible right now. A site fixes that."');
-  if(notes.match(/\d+\s*years?/i)){var ym=notes.match(/(\d+)\+?\s*years?/i);if(ym)points.push('"'+ym[1]+' years in business is incredible. Your online presence should reflect that kind of experience."');}
-  if(score>=85)points.push('HIGH PRIORITY lead. Strong business, big opportunity.');
-  if(notes.includes('BBB')||notes.includes('licensed')||notes.includes('certified'))points.push('Mention their credentials/certifications. Builds rapport.');
-  points.push('If no answer: try again in 2 days, different time of day');
-  points.push('If voicemail: "Hey this is Keelan, I\'m a web designer. I put together a free website concept for '+name+'. Give me a call back at 205-394-8346, or I\'ll try you again soon."');
-  objections.push('"I don\'t need a website" -> "I totally get that. But 80% of customers Google a business before calling. Even a simple one-page site with your number helps."');
-  objections.push('"How much does it cost?" -> "Depends on what you need, but I keep it affordable for local businesses. Can I send you some examples first so you can see the quality?"');
-  objections.push('"I\'ll think about it" -> "No rush at all. Can I text you the link so you have it when you\'re ready to look?"');
-  if(demo) objections.push('"Send me info" -> Text the demo link immediately. Follow up in 2 days.');
-  return{opener:opener,hook:hook,pitch:pitch,close:close,objections:objections,points:points};
-}
-
-function renderLeads() {
-  var filtered=filterLeads(allLeads), el=document.getElementById('leadList'), html='';
-  for(var i=0;i<filtered.length;i++){
-    var l=filtered[i], sc=generateScript(l), phoneLink=l.phone?'tel:'+l.phone.replace(/[^0-9+]/g,''):'#', isCalled=!!getCalledStatus()[l.business], oldSite=parseOldWebsite(l.notes||'');
-    html+='<div class="lead-card" id="lead-'+i+'"><div class="lead-header" onclick="toggleLead('+i+')"><div class="lead-score '+scoreClass(l.score)+'">'+l.score+'</div><div class="lead-biz">'+l.business+'</div><div class="lead-industry">'+(l.industry||'-')+'</div><div class="lead-loc">'+(l.location||'-')+'</div><div class="lead-phone">'+(l.phone||'-')+'</div><button class="called-toggle '+(isCalled?'called':'')+'" onclick="event.stopPropagation();toggleCalled(\''+l.business.replace(/'/g,"\\'")+'\')">'+(isCalled?'Called':'Not Called')+'</button><div class="lead-status '+statusClass(l.status)+'">'+(l.status||'New')+'</div><div class="lead-chevron">&#9660;</div></div>';
-    html+='<div class="lead-details"><div class="lead-detail-grid"><div class="lead-detail-box"><div class="lead-detail-label">Contact</div><div class="lead-detail-value">'+(l.phone?'<div>&#128222; <a href="'+phoneLink+'" style="color:var(--mint)">'+l.phone+'</a></div>':'')+(l.email?'<div>&#9993; <a href="mailto:'+l.email+'" style="color:var(--accent)">'+l.email+'</a></div>':'<div style="color:var(--muted)">No email</div>')+'</div></div>';
-    html+='<div class="lead-detail-box"><div class="lead-detail-label">Websites</div><div class="lead-detail-value">'+(l.demoSite?'<div>&#127919; Demo: <a href="'+l.demoSite+'" target="_blank" style="color:var(--green)">'+l.demoSite+'</a></div>':'<div style="color:var(--muted)">No demo built yet</div>')+(oldSite&&oldSite.startsWith('http')?'<div>&#127760; Current: <a href="'+oldSite+'" target="_blank" style="color:var(--orange)">'+oldSite+'</a></div>':oldSite?'<div style="color:var(--muted);font-size:11px;margin-top:4px">Current: '+oldSite+'</div>':'<div style="color:var(--muted);font-size:11px;margin-top:4px">Current: None / Unknown</div>')+'</div></div>';
-    html+='<div class="lead-detail-box"><div class="lead-detail-label">Tracking</div><div class="lead-detail-value"><div>Email: <span style="color:'+((l.emailSent||'').includes('Sent')?'var(--green)':'var(--muted)')+'">'+(l.emailSent||'Not sent')+'</span></div><div>Follow-up: <span style="color:var(--muted)">'+(l.followUp||'None')+'</span></div><div>Response: <span style="color:'+((l.response||'').includes('No')?'var(--coral)':'var(--muted)')+'">'+(l.response||'-')+'</span></div>'+(l.dateSent?'<div style="font-size:10px;color:var(--muted);margin-top:4px">Sent: '+l.dateSent+'</div>':'')+'</div></div>';
-    html+='<div class="lead-detail-box"><div class="lead-detail-label">Notes</div><div class="lead-detail-value" style="font-size:11px;color:var(--dim)">'+(l.notes||'No notes')+'</div></div>';
-    html+='<div class="lead-script-box"><div class="lead-detail-label">&#128222; Cold Call Script</div><div class="script-text"><strong>OPENER:</strong> '+sc.opener+'\n\n<strong>HOOK:</strong> '+sc.hook+'\n\n<strong>PITCH:</strong> '+sc.pitch+'\n\n<strong>CLOSE:</strong> '+sc.close+'</div><div class="lead-detail-label" style="margin-top:14px">Talking Points</div><div class="script-points">'+sc.points.map(function(p){return'<div class="script-point">'+p+'</div>';}).join('')+'</div><div class="lead-detail-label" style="margin-top:14px">Objection Handling</div><div class="script-points">'+sc.objections.map(function(o){return'<div class="script-point" style="border-left-color:var(--orange)">'+o+'</div>';}).join('')+'</div>'+(l.phone?'<a href="'+phoneLink+'" class="call-btn">&#128222; Call '+l.business+'</a>':'')+'</div></div></div></div>';
-  }
-  el.innerHTML=html||'<div style="color:var(--muted);padding:20px;text-align:center">No leads match this filter</div>';
-}
-function toggleLead(i){document.getElementById('lead-'+i).classList.toggle('expanded');}
-document.getElementById('filterBar').addEventListener('click',function(e){if(!e.target.classList.contains('filter-btn'))return;document.querySelectorAll('.filter-btn').forEach(function(b){b.classList.remove('active');});e.target.classList.add('active');currentFilter=e.target.dataset.filter;renderLeads();});
-
-// ============ WORK SESSIONS ============
-var FILE_INFO={
-  'strategy.md':{icon:'&#129504;',bg:'var(--accent-dim)',label:'Revenue Strategy',desc:'Living document with current hypothesis, what\'s working/failing, search strategy, experiments, priorities, and overnight updates.'},
-  'morning':{icon:'&#9728;',bg:'var(--gold-dim)',label:'Morning Report',desc:'What the overnight agent accomplished and what needs attention today.'},
-  'evening':{icon:'&#127769;',bg:'var(--purple-dim)',label:'Evening Report',desc:'End-of-day progress summary, metrics, and next priorities.'},
-  'overnight':{icon:'&#127769;',bg:'var(--mint-dim)',label:'Overnight Session',desc:'Log from autonomous 2AM agent run. Lead gen, idea research, site builds.'},
-  'idea':{icon:'&#128161;',bg:'var(--orange-dim)',label:'Business Ideas',desc:'Scored opportunities discovered by the idea-scout agent.'},
-  'lead':{icon:'&#128176;',bg:'var(--green-dim)',label:'Lead Research',desc:'Prospecting notes and lead research findings.'},
-  'job':{icon:'&#128188;',bg:'var(--blue-dim)',label:'Career Materials',desc:'Resume, cover letters, job search documents.'},
-  'contact':{icon:'&#128222;',bg:'var(--mint-dim)',label:'Contact Info',desc:'Saved contact details and communication records.'},
-  'style':{icon:'&#127912;',bg:'var(--rose-dim)',label:'Style Preferences',desc:'Design preferences, brand guidelines, visual standards.'},
-  'claude-tools':{icon:'&#128295;',bg:'var(--accent-dim)',label:'Tools Reference',desc:'Breakdown of available Claude tools and MCP integrations.'},
-  'google-drive':{icon:'&#128193;',bg:'var(--blue-dim)',label:'Google Drive',desc:'Drive file references and organization notes.'},
-  'hero-blurb':{icon:'&#9997;',bg:'var(--gold-dim)',label:'Hero Blurbs',desc:'Website hero section copy ideas and variations.'},
-  'default':{icon:'&#128196;',bg:'var(--accent-dim)',label:'',desc:'Workspace file.'}
-};
-function getFileInfo(f){
-  if(f==='strategy.md')return FILE_INFO['strategy.md'];
-  for(var k of['morning','evening','overnight','idea','lead','job','contact','style','claude-tools','google-drive','hero-blurb']){
-    if(f.toLowerCase().includes(k))return{icon:FILE_INFO[k].icon,bg:FILE_INFO[k].bg,label:FILE_INFO[k].label+': '+f.replace('overnight/','').replace('.md',''),desc:FILE_INFO[k].desc};
-  }
-  return{icon:FILE_INFO['default'].icon,bg:FILE_INFO['default'].bg,label:f.replace('.md',''),desc:FILE_INFO['default'].desc};
-}
-async function fetchWorkSessions(){
-  try{
-    var sessions=await smartFetch('/api/work-sessions',null);
-    if(!sessions){document.getElementById('workList').innerHTML='<div style="color:var(--muted);padding:20px;text-align:center">Connect locally for work session data</div>';return;}
-    var el=document.getElementById('workList'),html='';
-    for(var i=0;i<sessions.length;i++){var s=sessions[i],info=getFileInfo(s.file);
-      html+='<div class="work-item" id="work-'+i+'"><div class="work-header" onclick="document.getElementById(\'work-'+i+'\').classList.toggle(\'expanded\')"><div class="work-icon" style="background:'+info.bg+'">'+info.icon+'</div><div class="work-info"><div class="work-name">'+info.label+'</div><div class="work-desc">'+info.desc+'</div><div class="work-time">Updated '+timeAgo(s.modified)+'</div></div><div class="work-chevron">&#9660;</div></div><div class="work-body"><div class="work-preview">'+(s.preview||'').replace(/</g,'&lt;').replace(/>/g,'&gt;')+'</div></div></div>';
+// ============ ANDY (auto-dialer) ============
+var ANDY_CALLS = [], ANDY_STATS = { total:0, completed:0, totalSec:0, byCampaign:{} };
+async function fetchAndyCalls() {
+  try {
+    var d = await smartFetch('/api/calls', null);
+    if (d) {
+      ANDY_CALLS = d.calls || [];
+      ANDY_STATS = d.stats || ANDY_STATS;
+      renderAndyStats();
+      renderAndyCallsList();
     }
-    el.innerHTML=html||'<div style="color:var(--muted);padding:20px;text-align:center">No work sessions found</div>';
-    lastFetch.sessions=Date.now(); document.getElementById('sessionsUpdated').textContent='Updated '+new Date().toLocaleTimeString();
-  }catch(e){document.getElementById('workList').innerHTML='<div style="color:var(--muted);padding:20px">Error: '+e.message+'</div>';}
+  } catch(e) {}
+}
+function fmtCallDuration(sec) {
+  if (!sec) return '-';
+  if (sec < 60) return Math.round(sec) + 's';
+  var m = Math.floor(sec/60), s = Math.round(sec%60);
+  return m + 'm' + (s ? ' ' + s + 's' : '');
+}
+function fmtCallTs(ts) {
+  if (!ts) return '-';
+  try {
+    var d = new Date(ts);
+    var hr = d.getHours(), min = d.getMinutes();
+    var ampm = hr >= 12 ? 'pm' : 'am';
+    var hr12 = hr % 12 || 12;
+    var mm = min < 10 ? '0' + min : min;
+    var dateStr = (d.getMonth()+1) + '/' + d.getDate();
+    return dateStr + ' ' + hr12 + ':' + mm + ampm;
+  } catch(e) { return ts; }
+}
+function renderAndyStats() {
+  var minutes = (ANDY_STATS.totalSec / 60).toFixed(1);
+  var byCamp = ANDY_STATS.byCampaign || {};
+  var campChips = Object.keys(byCamp).map(function(k){
+    return '<div class="calling-stat"><div class="num" style="color:var(--char-andy)">'+byCamp[k]+'</div><div class="lbl">'+k+'</div></div>';
+  }).join('');
+  document.getElementById('andyStats').innerHTML =
+    '<div class="calling-stat blue"><div class="num">'+ANDY_STATS.total+'</div><div class="lbl">Total Calls</div></div>' +
+    '<div class="calling-stat green"><div class="num">'+ANDY_STATS.completed+'</div><div class="lbl">Completed</div></div>' +
+    '<div class="calling-stat orange"><div class="num">'+minutes+'</div><div class="lbl">Minutes</div></div>' +
+    campChips;
+}
+function renderAndyCallsList() {
+  var el = document.getElementById('andyCallsList');
+  if (!ANDY_CALLS.length) {
+    el.innerHTML = '<div style="color:var(--muted);padding:14px;text-align:center;border:1px dashed var(--border);border-radius:8px;font-size:12px">No calls yet. Andy is waiting on the green light.</div>';
+    return;
+  }
+  var recent = ANDY_CALLS.slice(0, 25);
+  var html = '';
+  for (var i = 0; i < recent.length; i++) {
+    var c = recent[i];
+    var outcome = (c.outcome || 'unknown').replace(/[^a-z_]/g,'');
+    var recBtn = c.recording_url ? '<a class="andy-call-btn" href="'+c.recording_url+'" target="_blank" title="Recording">&#9654; Rec</a>' : '';
+    var txBtn = c.retell_call_id ? '<button class="andy-call-btn" onclick="openTranscript(\''+c.retell_call_id+'\')">Transcript</button>' : '';
+    html += '<div class="andy-call-row">' +
+      '<div class="andy-call-campaign">'+(c.campaign||'?')+'</div>' +
+      '<div class="andy-call-target">'+(c.target||'-')+(c.notes&&c.notes.indexOf('lead_name=')===0 ? ' <span style="color:var(--muted);font-size:10px">('+c.notes.replace('lead_name=','')+')</span>':'')+'</div>' +
+      '<div class="andy-call-time">'+fmtCallTs(c.ts)+'</div>' +
+      '<div class="andy-call-outcome '+outcome+'">'+(c.outcome||'?')+'</div>' +
+      '<div class="andy-call-dur">'+fmtCallDuration(c.duration_sec)+'</div>' +
+      '<div class="andy-call-actions">'+recBtn+txBtn+'</div>' +
+    '</div>';
+  }
+  el.innerHTML = html;
+}
+async function openTranscript(callId) {
+  var bg = document.createElement('div');
+  bg.className = 'transcript-modal-bg';
+  bg.innerHTML = '<div class="transcript-modal"><h3>Call Transcript</h3>' +
+    '<div class="meta">'+callId+'</div>' +
+    '<div class="transcript-body" id="txBody">Loading...</div>' +
+    '<div class="close-row"><button class="close-btn" onclick="this.closest(\'.transcript-modal-bg\').remove()">Close</button></div></div>';
+  bg.addEventListener('click', function(e){ if(e.target===bg) bg.remove(); });
+  document.body.appendChild(bg);
+  try {
+    var res = await fetch('/api/call-transcript/' + encodeURIComponent(callId));
+    var data = await res.json();
+    document.getElementById('txBody').textContent = data.transcript || '(empty transcript)';
+  } catch(e) {
+    document.getElementById('txBody').textContent = 'Failed to load transcript: ' + e.message;
+  }
 }
 
 // ============ LIVE TIMESTAMPS ============
@@ -2770,6 +4980,8 @@ var CHAR_SPRITE_MAP = {
   'Kelly': 2,   // shares with Stanley
   'Angela': 3,  // light skin
   'Toby': 4,    // brown hair, light skin
+  'Phyllis': 3, // light skin (Pam-look reused), purple color identity
+  'Andy': 1,    // brown hair (Dwight-look reused), orange color identity
 };
 
 // ============ FLOOR PLAN UTILITIES ============
@@ -2788,6 +5000,11 @@ var ROOM_CHAR_MAP = {
   'tobys office': 'Toby',
   'dwights office': 'Dwight',
   'stanleys office': 'Stanley',
+  // Newly added rooms via /editor (just room names, no "office" suffix)
+  'phyllis': 'Phyllis',
+  'andy': 'Andy',
+  'creed': 'Creed',
+  'oscar': 'Oscar',
 };
 // Reverse: character name → room name
 var CHAR_ROOM_MAP = {};
@@ -2991,7 +5208,7 @@ class OfficeScene extends Phaser.Scene {
       sprite.play(spriteKey + '_idle');
       sprite.setAlpha(0.75);
 
-      var lbl = self.add.text(startX, startY - SPRITE_H * self.SCALE - 2, charName, {
+      var lbl = self.add.text(startX, startY - SPRITE_H * self.SCALE - 2, CHAR_DISPLAY_LABEL[charName] || charName, {
         fontSize: '9px', color: '#e0e4f0', fontFamily: 'IBM Plex Sans',
         backgroundColor: 'rgba(26,32,53,0.9)', padding: { x: 4, y: 2 },
         stroke: '#0d1117', strokeThickness: 1
@@ -3052,15 +5269,15 @@ class OfficeScene extends Phaser.Scene {
       { id:'jim', x: 440*scaleX, y: 440*scaleY, label:'Jim', isJim:true },
       // Ryan's server closet (bottom-center, small room with server rack)
       { id:'ryan', x: 592*scaleX, y: 347*scaleY, label:'Ryan', isRyan:true },
-      // Oscar's research desk (right bullpen area)
-      { id:'oscar', x: 760*scaleX, y: 250*scaleY, label:'Oscar', isOscar:true },
+      // Oscar's research desk (mid bullpen, between Phyllis and right edge)
+      { id:'oscar', x: 408*scaleX, y: 308*scaleY, label:'Oscar', isOscar:true },
       // Bullpen desks — upper cluster (left side of bullpen)
       { id:'d1', x: 255*scaleX, y: 250*scaleY, label:'Dwight' },
       { id:'d2', x: 255*scaleX, y: 310*scaleY, label:'Jim' },
       { id:'d3', x: 340*scaleX, y: 250*scaleY, label:'Pam' },
       { id:'d4', x: 340*scaleX, y: 310*scaleY, label:'Angela' },
       // Bullpen desks — middle cluster
-      { id:'d5', x: 250*scaleX, y: 380*scaleY, label:'Oscar' },
+      { id:'d5', x: 250*scaleX, y: 380*scaleY, label:'Meredith' },
       { id:'d6', x: 250*scaleX, y: 430*scaleY, label:'Stanley' },
       { id:'d7', x: 430*scaleX, y: 250*scaleY, label:'Kevin' },
       { id:'d8', x: 430*scaleX, y: 310*scaleY, label:'Kelly' },
@@ -3068,6 +5285,7 @@ class OfficeScene extends Phaser.Scene {
       { id:'d9', x: 520*scaleX, y: 250*scaleY, label:'Phyllis' },
       { id:'d10', x: 520*scaleX, y: 310*scaleY, label:'Meredith' },
       { id:'d11', x: 600*scaleX, y: 250*scaleY, label:'Creed' },
+      { id:'andy', x: 380*scaleX, y: 230*scaleY, label:'Andy' },
       // Annex desks (far right)
       { id:'kelly', x: 845*scaleX, y: 370*scaleY, label:'Kelly', isKelly:true },
       { id:'d12', x: 900*scaleX, y: 350*scaleY, label:'Toby' },
@@ -3193,7 +5411,7 @@ class OfficeScene extends Phaser.Scene {
         sprite.play(spriteKey + '_type'); // start typing
 
         // Name label
-        var lbl = self.add.text(startX, startY - SPRITE_H * self.SCALE - 2, charName, {
+        var lbl = self.add.text(startX, startY - SPRITE_H * self.SCALE - 2, CHAR_DISPLAY_LABEL[charName] || charName, {
           fontSize: '9px', color: '#e0e4f0', fontFamily: 'IBM Plex Sans',
           backgroundColor: 'rgba(26,32,53,0.9)', padding: { x: 4, y: 2 },
           stroke: '#0d1117', strokeThickness: 1
@@ -4202,19 +6420,23 @@ var chatTypingIndicator = null; // {sender, timeout}
 
 function chatRelativeTime(ts) {
   if (!ts) return '';
+  var d = new Date(ts);
+  var hr = d.getHours();
+  var min = d.getMinutes();
+  var ampm = hr >= 12 ? 'pm' : 'am';
+  var hr12 = hr % 12; if (hr12 === 0) hr12 = 12;
+  var clock = hr12 + ':' + (min < 10 ? '0' + min : min) + ampm;
   var now = Date.now();
   var diffMs = now - ts;
   var diffSec = Math.floor(diffMs / 1000);
-  if (diffSec < 60) return 'just now';
+  if (diffSec < 60) return clock + ' (just now)';
   var diffMin = Math.floor(diffSec / 60);
-  if (diffMin < 60) return diffMin + 'm ago';
+  if (diffMin < 60) return clock + ' (' + diffMin + 'm)';
   var diffHr = Math.floor(diffMin / 60);
-  if (diffHr < 24) return diffHr + 'hr ago';
+  if (diffHr < 24) return clock + ' (' + diffHr + 'h)';
   var diffDay = Math.floor(diffHr / 24);
-  if (diffDay === 1) return '1d ago';
-  if (diffDay < 7) return diffDay + 'd ago';
-  var d = new Date(ts);
-  return (d.getMonth()+1) + '/' + d.getDate();
+  if (diffDay < 7) return (d.getMonth()+1) + '/' + d.getDate() + ' ' + clock + ' (' + diffDay + 'd)';
+  return (d.getMonth()+1) + '/' + d.getDate() + ' ' + clock;
 }
 
 function formatChatMarkdown(text) {
@@ -4441,7 +6663,7 @@ document.addEventListener('keydown', function(e) {
 
   // Ctrl+1-4 — Tab switching (works everywhere)
   if ((e.ctrlKey || e.metaKey) && !e.shiftKey && !e.altKey) {
-    var ctrlTabMap = { '1': 'usage', '2': 'operations', '3': 'calling', '4': 'sessions' };
+    var ctrlTabMap = { '1': 'usage', '2': 'operations' };
     if (ctrlTabMap[e.key]) {
       e.preventDefault();
       if (cmdPaletteOpen) closeCmdPalette();
@@ -4477,12 +6699,14 @@ document.addEventListener('keydown', function(e) {
   if (isInput || isCmdInput) return;
 
   // Tab switching: 1-4 (bare keys, no modifier)
-  var tabMap = { '1': 'usage', '2': 'operations', '3': 'calling', '4': 'sessions' };
+  var tabMap = { '1': 'usage', '2': 'operations' };
   if (tabMap[e.key]) {
     e.preventDefault();
     switchToTab(tabMap[e.key]);
     return;
   }
+
+  // Approval tab keyboard shortcuts removed (Approval tab no longer exists).
 
   // "/" focuses office chat input
   if (e.key === '/') {
@@ -5349,7 +7573,7 @@ window.addEventListener('beforeunload', function() {
 async function init(){
   try {
     for(var i=0;i<5;i++){try{var r=await fetch('/api/usage');if(r.ok)break;}catch{}await new Promise(function(r){setTimeout(r,300);});}
-    renderProjects();fetchUsage();fetchAgents();fetchLeads();fetchWorkSessions();fetchUsageHistory();fetchResearchConfig();fetchSchedulerStatus();fetchResearchFiles();fetchSystemHealth();fetchChatStats();renderAgentDrawer([], null);fetchSessionStats();
+    renderProjects();fetchUsage();fetchAgents();fetchUsageHistory();fetchResearchConfig();fetchSchedulerStatus();fetchResearchFiles();fetchSystemHealth();fetchChatStats();renderAgentDrawer([], null);fetchSessionStats();
     setInterval(fetchUsage,15000);setInterval(fetchAgents,10000);setInterval(fetchLeads,60000);setInterval(fetchWorkSessions,120000);setInterval(fetchUsageHistory,300000);setInterval(fetchSchedulerStatus,30000);setInterval(fetchSystemHealth,30000);setInterval(fetchChatStats,60000);setInterval(fetchSessionStats,30000);
     // Burn rate tracking: record a reading on each usage fetch cycle
     setInterval(renderBurnRate, 15000);
@@ -5467,8 +7691,6 @@ function getCmdPaletteCommands() {
   // Tab switching
   cmds.push({ icon: '&#9776;', label: 'Switch to Home', shortcut: '1', category: 'Tabs', action: function() { switchToTab('usage'); } });
   cmds.push({ icon: '&#9776;', label: 'Switch to Operations', shortcut: '2', category: 'Tabs', action: function() { switchToTab('operations'); } });
-  cmds.push({ icon: '&#9776;', label: 'Switch to Cold Calling', shortcut: '3', category: 'Tabs', action: function() { switchToTab('calling'); } });
-  cmds.push({ icon: '&#9776;', label: 'Switch to Work Sessions', shortcut: '4', category: 'Tabs', action: function() { switchToTab('sessions'); } });
   // Actions
   cmds.push({ icon: '&#9788;', label: 'Toggle Theme', shortcut: '', category: 'Actions', action: function() { toggleTheme(); } });
   cmds.push({ icon: '&#8635;', label: 'Restart Scraper', shortcut: '', category: 'Actions', action: function() { restartScraper(); } });
@@ -5678,7 +7900,7 @@ function switchToTab(tabName) {
 
 // ============ FORCE REFRESH ALL ============
 function forceRefreshAll() {
-  fetchUsage(); fetchAgents(); fetchLeads(); fetchWorkSessions();
+  fetchUsage(); fetchAgents();
   fetchUsageHistory(); fetchResearchConfig(); fetchSchedulerStatus();
   fetchResearchFiles(); fetchSystemHealth(); fetchChatStats(); fetchSessionStats();
   if (typeof fetchChat === 'function') fetchChat();
@@ -6121,6 +8343,19 @@ setInterval(fetchChatReactions, 30000);
 <div class="office-minimap" id="officeMinimap" style="display:none" onclick="switchToTab('usage')" title="Click to return to Home">
   <canvas id="minimapCanvas" width="150" height="78"></canvas>
   <span class="office-minimap-label">Office</span>
+</div>
+
+<!-- Musk's 5-Step Algorithm: always-visible footer strip -->
+<div id="muskAlgoFooter" title="Musk's 5-Step Engineering Algorithm" style="display:flex;justify-content:center;align-items:center;gap:18px;padding:8px 14px;margin-top:24px;border-top:1px solid var(--border);font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted);letter-spacing:.5px;text-transform:uppercase;opacity:.7;flex-wrap:wrap">
+  <span><span style="color:var(--accent);font-weight:700">1.</span> Less Dumb</span>
+  <span style="opacity:.3">&rarr;</span>
+  <span><span style="color:var(--accent);font-weight:700">2.</span> Delete</span>
+  <span style="opacity:.3">&rarr;</span>
+  <span><span style="color:var(--accent);font-weight:700">3.</span> Simplify</span>
+  <span style="opacity:.3">&rarr;</span>
+  <span><span style="color:var(--accent);font-weight:700">4.</span> Accelerate</span>
+  <span style="opacity:.3">&rarr;</span>
+  <span><span style="color:var(--accent);font-weight:700">5.</span> Automate Last</span>
 </div>
 
 </body>
